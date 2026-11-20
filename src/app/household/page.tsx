@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { SignOutButton } from "@/app/auth/SignOutButton";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { InviteButton, OnboardingForms } from "./forms";
 
@@ -35,14 +37,20 @@ export default async function HouseholdPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col gap-8 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">{household?.name ?? "Your flat"}</h1>
-        <ul className="pt-2 text-sm text-neutral-700">
-          {(members ?? []).map((m) => (
-            <li key={m.user_id}>{m.display_name}</li>
-          ))}
-        </ul>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">{household?.name ?? "Your flat"}</h1>
+          <ul className="pt-2 text-sm text-neutral-700">
+            {(members ?? []).map((m) => (
+              <li key={m.user_id}>{m.display_name}</li>
+            ))}
+          </ul>
+        </div>
+        <SignOutButton />
       </div>
+      <Link href="/expenses" className="rounded-md bg-neutral-900 px-4 py-2 text-center text-white">
+        Expenses
+      </Link>
       {memberCount < 2 ? (
         <section className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold">Invite your roommate</h2>
