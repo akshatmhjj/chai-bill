@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SignOutButton } from "@/app/auth/SignOutButton";
+import { RealtimeRefresh } from "@/app/RealtimeRefresh";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { buildHouseholdSummary } from "@/lib/money/summary";
 import { formatINR } from "@/lib/money/paise";
@@ -92,10 +93,14 @@ export default async function BalancesPage({
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col gap-8 p-6">
+      <RealtimeRefresh householdId={householdId} userId={me} />
       <header className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Balances</h1>
-          <Link href="/expenses" className="text-sm text-neutral-600 underline">Expenses</Link>
+          <nav className="flex gap-3 text-sm text-neutral-600">
+            <Link href="/expenses" className="underline">Expenses</Link>
+            <Link href="/activity" className="underline">Activity</Link>
+          </nav>
         </div>
         <SignOutButton />
       </header>
