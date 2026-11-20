@@ -141,7 +141,7 @@ describe("settleUp", () => {
       { from: "b", to: "a", paise: 55 },
     ]);
     // Applying the plan returns everyone to zero.
-    const after = { ...balances };
+    const after: Record<string, number> = { ...balances };
     for (const t of plan) {
       after[t.from] += t.paise;
       after[t.to] -= t.paise;

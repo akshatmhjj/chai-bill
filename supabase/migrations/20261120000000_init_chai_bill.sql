@@ -112,7 +112,14 @@ declare
   v_sum bigint;
   v_count integer;
 begin
-  v_expense := case when tg_table_name = 'expenses' then new.id else coalesce(new.expense_id, old.expense_id) end;
+  -- Branch on the table: the NEW record has no `expense_id` on expenses, and no `id` on expense_shares.
+  if tg_table_name = 'expenses' then
+    v_expense := new.id;
+  elsif tg_op = 'DELETE' then
+    v_expense := old.expense_id;
+  else
+    v_expense := new.expense_id;
+  end if;
 
   select amount_paise into v_total from public.expenses where id = v_expense;
   if v_total is null then
