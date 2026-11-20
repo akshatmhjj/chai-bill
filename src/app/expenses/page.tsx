@@ -48,9 +48,14 @@ export default async function ExpensesPage() {
         <SignOutButton />
       </header>
 
-      <Link href="/expenses/new" className="rounded-md bg-neutral-900 px-4 py-2 text-center text-white">
-        Add expense
-      </Link>
+      <div className="flex gap-3">
+        <Link href="/expenses/new" className="flex-1 rounded-md bg-neutral-900 px-4 py-2 text-center text-white">
+          Add expense
+        </Link>
+        <Link href="/balances" className="flex-1 rounded-md border border-neutral-400 px-4 py-2 text-center">
+          Balances
+        </Link>
+      </div>
 
       {(expenses ?? []).length === 0 && <p className="text-sm text-neutral-600">No expenses yet.</p>}
 
