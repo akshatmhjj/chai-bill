@@ -12,6 +12,7 @@ import { AnimatedMoney, Money } from "@/components/ui/Money";
 import type { Member } from "@/lib/data/context";
 import type { Transfer } from "@/lib/money/balances";
 import { SettleSheet } from "./SettleSheet";
+import { useNestPath } from "@/components/nest/NestContext";
 
 const SHOWN = 3;
 
@@ -46,6 +47,7 @@ export function BalanceHero({
   detailsHref?: string;
   showSettle?: boolean;
 }) {
+  const nestPath = useNestPath();
   const [settleOpen, setSettleOpen] = useState(autoOpenSettle);
   const [celebrate, setCelebrate] = useState(false);
 
@@ -79,7 +81,7 @@ export function BalanceHero({
               {hasHistory ? `Nobody owes anybody anything. Enjoy it, ${me.name}.` : "Add your first shared expense and the balance shows up here."}
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-2.5">
-              <Link href="/expenses/new" className={buttonStyles({ variant: "soft" })}>
+              <Link href={nestPath("/expenses/new")} className={buttonStyles({ variant: "soft" })}>
                 Add an expense
               </Link>
               {detailsHref && hasHistory && (

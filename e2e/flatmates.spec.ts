@@ -1,16 +1,16 @@
 import { expect, test } from "@playwright/test";
-import { addExpense, completeProfile, hero, joinFlat, newInviteFromProfile, open, signIn, twoRoommates, uniqueEmail } from "./helpers";
+import { addExpense, completeProfile, hero, joinNest, newInvite, open, signIn, twoRoommates, uniqueEmail } from "./helpers";
 
-test("three flatmates split an expense three ways, and each person's balance is worked out against the others", async ({ browser }) => {
+test("three housemates split an expense three ways, and each person's balance is worked out against the others", async ({ browser }) => {
   const { aContext, bContext, a, b } = await twoRoommates(browser);
 
-  // Akshat invites a third flatmate from his profile, and Meera joins.
-  const code = await newInviteFromProfile(a);
+  // Akshat shares the nest's code from the invite screen, and Meera joins with it.
+  const code = await newInvite(a);
   const cContext = await browser.newContext();
   const c = await cContext.newPage();
   await signIn(c, uniqueEmail("meera"));
   await completeProfile(c, "Meera", "Sunny");
-  await joinFlat(c, code);
+  await joinNest(c, code);
 
   // ₹1,000 split equally three ways: 33333 paise each, the odd paisa with the payer (Akshat).
   await addExpense(a, { amount: "1000", description: "Three-way dinner" });
@@ -29,7 +29,7 @@ test("three flatmates split an expense three ways, and each person's balance is 
   await expect(hero(c)).toContainText("You owe Akshat");
   await expect(hero(c)).toContainText("₹333.33");
 
-  // The balances page lists the whole flat, not just the two people in the first pair.
+  // The balances page lists the whole nest, not just the two people in the first pair.
   await open(a, "/balances");
   await expect(a.getByText("Where everyone stands")).toBeVisible();
   await expect(a.getByRole("main").getByText("Meera", { exact: true }).first()).toBeVisible();
@@ -40,14 +40,14 @@ test("three flatmates split an expense three ways, and each person's balance is 
   await cContext.close();
 });
 
-test("a flat is not capped at two, and the header lists the people in it", async ({ browser }) => {
+test("a nest is not capped at two, and the header lists the people in it", async ({ browser }) => {
   const { aContext, bContext, a } = await twoRoommates(browser);
-  const code = await newInviteFromProfile(a);
+  const code = await newInvite(a);
   const cContext = await browser.newContext();
   const c = await cContext.newPage();
   await signIn(c, uniqueEmail("third-header"));
   await completeProfile(c, "Meera", "Sunny");
-  await joinFlat(c, code);
+  await joinNest(c, code);
 
   await open(a, "/expenses");
   await expect(a.getByRole("main").getByText("Akshat, Yashwardhan and Meera")).toBeVisible();

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar/Avatar";
 import type { AvatarKey } from "@/lib/avatars";
@@ -13,7 +14,7 @@ export function PageHeader({
   me,
 }: {
   title: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   action?: React.ReactNode;
   me: { name: string; avatar: AvatarKey };
 }) {

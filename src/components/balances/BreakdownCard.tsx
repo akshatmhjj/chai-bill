@@ -7,7 +7,7 @@ export function BreakdownCard({ breakdown }: { breakdown: MemberBreakdown }) {
   const rows: { label: string; hint: string; paise: number; sign: "+" | "−" | "" }[] = [
     { label: "You paid for", hint: "shared expenses you covered", paise: breakdown.paid, sign: "" },
     { label: "Your share of everything", hint: "your part of all shared expenses", paise: breakdown.owed, sign: "−" },
-    { label: "Payments you sent", hint: "money you've paid others in the flat", paise: breakdown.sent, sign: "+" },
+    { label: "Payments you sent", hint: "money you've paid others in the nest", paise: breakdown.sent, sign: "+" },
     { label: "Payments you received", hint: "money others have paid you", paise: breakdown.received, sign: "−" },
   ];
 

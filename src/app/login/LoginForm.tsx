@@ -93,10 +93,10 @@ export function LoginForm({ linkError }: { linkError: boolean }) {
             >
               <div className="space-y-3">
                 <h1 className="font-display text-[2.6rem] font-semibold leading-[1.05] tracking-tight lg:text-5xl">
-                  Your flat&apos;s little ledger.
+                  Your nest&apos;s little ledger.
                 </h1>
                 <p className="text-lg text-ink-2">
-                  Split what you spend, settle up without the awkwardness, and keep the shopping list in one place. For the whole flat.
+                  Split what you spend, settle up without the awkwardness, and keep the shopping list in one place. For the whole nest.
                 </p>
               </div>
 

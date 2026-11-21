@@ -2,8 +2,8 @@
 
 # ☕ Chai Bill
 
-**The shared ledger for your flat.**<br>
-Split expenses, settle up without the awkwardness, and keep the shopping list in one place. Made for flatmates, in rupees, with UPI.
+**The shared ledger for your nest.**<br>
+Split expenses, settle up without the awkwardness, and keep the shopping list in one place. Made for housemates, in rupees, with UPI.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-c4501a.svg)](LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-2b7753.svg)](CONTRIBUTING.md)
@@ -27,15 +27,17 @@ wifi, you'll know why it exists. See [Contributing](#-contributing) to join in.
 ## Why Chai Bill
 
 Most expense apps are built for groups, trips and accountants. Chai Bill is built for the people who share
-a front door, up to 15 of them: it answers *"what's happening in our flat?"* the moment you open it.
+a front door, up to 15 of them: it answers *"what's happening in our nest?"* the moment you open it.
+A **nest** is one shared home. You can belong to several (a flat, a PG, a family house), and each keeps its own
+expenses, payments, shopping list and activity.
 
 - **Who owes whom, at a glance.** Two avatars, one arrow, one number. Tap once to settle up.
 - **Quick enough to use daily.** Adding a chai bill takes seconds: type an amount, and you're nearly done.
 - **Honest about money.** Everything is stored as integer paise. Splits never leak a paisa, and the leftover
   always lands somewhere predictable (with the payer).
-- **Private where it counts.** Your personal expenses are invisible to everyone else in the flat, enforced in the
+- **Private where it counts.** Your personal expenses are invisible to everyone else in the nest, enforced in the
   database, not just hidden in the UI.
-- **Alive.** When a flatmate adds something, your screen updates, tells you who did it, and the new item
+- **Alive.** When a housemate adds something, your screen updates, tells you who did it, and the new item
   glows. No refreshing.
 
 ## Features
@@ -67,7 +69,7 @@ a front door, up to 15 of them: it answers *"what's happening in our flat?"* the
 ### 🔔 Activity and live updates
 - A feed of every expense, edit, payment and shopping change
 - "New since your last visit" that is exactly right
-- Toasts with the flatmate's avatar as it happens
+- Toasts with the housemate's avatar as it happens
 
 ### 🎨 Made to be enjoyed
 - Ten hand-drawn avatars, each with its own accent
@@ -124,9 +126,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...                      # ANON_KEY
 
 **Signing in locally.** Chai Bill uses magic links, and local emails never leave your machine. Open the
 inbox at **http://127.0.0.1:54324**, click the link, and you're in. Sign in as two different emails (in two
-browsers or one normal and one private window) to play two flatmates, or use more emails for more.
+browsers or one normal and one private window) to play two housemates, or use more emails for more.
 
-> **Heads up:** `supabase/config.toml` limits sign-in emails to 2 per hour, the safe value for
+> **Heads up:** `supabase/config.toml` limits sign-in emails to 10 per hour, a safe value for
 > production. When developing locally you'll hit that quickly. Raise `email_sent` (and
 > `sign_in_sign_ups`, `token_verifications`) under `[auth.rate_limit]`, restart with `supabase stop && supabase start`,
 > and avoid committing that change.
@@ -143,6 +145,16 @@ database, and `supabase db reset` rebuilds it from scratch.
 | `npm run lint` | ESLint |
 | `npm test` | Unit tests (Vitest) |
 | `npm run test:e2e` | End-to-end tests in Chromium (Playwright): builds the app and drives it |
+
+## Nests and invites
+
+- **One account, many nests.** Sign up once; the front page lists every nest you're in, and tapping one opens
+  its own expenses, settle up, shopping list and activity. Nothing crosses between nests.
+- **Short codes, not essays.** A nest's code is 8 letters and digits, shown as `xxxx-xxxx`, so it's easy to
+  read out or type. Share it, or the QR on the invite screen, and whoever scans or types it is in.
+- **Refresh when you need to.** "Make a new code" revokes the old code and its QR immediately, for people
+  who shared it by mistake.
+- **Join from the front page** with a code, or open the link or scan the QR directly.
 
 ## How the money works
 
@@ -165,11 +177,13 @@ The engine is pure TypeScript with no framework or database imports: see [`src/l
 Privacy is enforced where it can't be bypassed: in Postgres.
 
 - Every table has **row-level security**, and `anon` has no access at all.
-- Personal expenses are visible only to their creator. Shared data belongs to the flat's two members.
+- Personal expenses are visible only to their creator. Shared data belongs to the members of that nest, and nothing
+  leaks between nests.
 - A payment can only be recorded by the person who made it.
 - Every expense's shares must add up to its total, checked by a deferred constraint at `COMMIT`.
-- Households are created and joined only through RPCs; invite codes are single use, expire in 7 days, and a
-  flat holds up to 15 people (`household_member_cap()` in the database).
+- Nests are created and joined only through RPCs. An invite code is 8 letters and digits (shown as `xxxx-xxxx`),
+  works for anyone until it is refreshed or expires after 7 days, and a nest holds up to 15 people
+  (`household_member_cap()` in the database). Refreshing a code revokes the old one and its QR at once.
 - The activity feed is written only by database triggers, so it can't be forged from the client.
 - Realtime uses the same policies, so you only ever receive rows you could have read.
 
@@ -277,5 +291,5 @@ report it privately.
 
 <div align="center">
 <br>
-Made with ☕ for people who share a flat.
+Made with ☕ for people who share a home.
 </div>

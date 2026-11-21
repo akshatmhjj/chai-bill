@@ -6,6 +6,8 @@ import { supabaseAnonKey, supabaseUrl } from "./env";
 const PUBLIC_PATHS = [
   "/login",
   "/auth/callback",
+  // A shared join link must open for people who are signed out; the page itself handles sign-in.
+  "/join",
   // The design-system gallery needs no sign-in while developing. In every other environment it is hidden.
   ...(process.env.NODE_ENV === "development" ? ["/design"] : []),
 ];

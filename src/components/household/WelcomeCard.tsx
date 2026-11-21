@@ -15,7 +15,7 @@ export function WelcomeCard({ householdName, members }: { householdName: string;
   function dismiss() {
     setOpen(false);
     // Drop ?welcome=1 so it doesn't come back on refresh.
-    router.replace("/", { scroll: false });
+    router.replace(window.location.pathname, { scroll: false });
   }
 
   const steps = [

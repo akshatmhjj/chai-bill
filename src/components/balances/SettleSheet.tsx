@@ -2,7 +2,7 @@
 
 import { Banknote, Smartphone, Wallet } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
-import { recordSettlementAction } from "@/app/(app)/balances/actions";
+import { recordSettlementAction } from "@/app/(app)/n/[nestId]/balances/actions";
 import { Avatar } from "@/components/avatar/Avatar";
 import { AmountInput } from "@/components/ui/AmountInput";
 import { Button } from "@/components/ui/Button";
@@ -10,6 +10,7 @@ import { Field } from "@/components/ui/Field";
 import { Segmented } from "@/components/ui/Segmented";
 import { Sheet } from "@/components/ui/Sheet";
 import { useToast } from "@/components/ui/Toast";
+import { useNestId } from "@/components/nest/NestContext";
 import type { Member } from "@/lib/data/context";
 import { formatINRCompact, MoneyError, parseRupeesToPaise } from "@/lib/money/paise";
 
@@ -45,6 +46,7 @@ export function SettleSheet({
   onRecorded?: (result: { settled: boolean; amountPaise: number; toName: string }) => void;
 }) {
   const { toast } = useToast();
+  const nestId = useNestId();
   const payees = [...others].sort((a, b) => (planned[b.userId] ?? 0) - (planned[a.userId] ?? 0));
   const defaultPayee = payees[0]?.userId ?? "";
 
@@ -99,6 +101,7 @@ export function SettleSheet({
     if (!payee) return;
     setError(null);
     const form = new FormData();
+    form.set("nestId", nestId);
     form.set("to", payee.userId);
     form.set("amount", amount);
     form.set("method", method);

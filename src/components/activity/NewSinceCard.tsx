@@ -3,7 +3,8 @@
 import { X } from "lucide-react";
 import Link from "next/link";
 import { useTransition } from "react";
-import { markActivitySeenAction } from "@/app/(app)/activity/actions";
+import { useNestPath } from "@/components/nest/NestContext";
+import { markActivitySeenAction } from "@/app/(app)/n/[nestId]/activity/actions";
 import { AnimatedList } from "@/components/ui/AnimatedList";
 import type { Member } from "@/lib/data/context";
 import type { ActivityView } from "@/lib/data/queries";
@@ -15,6 +16,7 @@ import { ActivityItem } from "./ActivityItem";
  */
 export function NewSinceCard({ events, total, me, members, householdId }: { events: ActivityView[]; total: number; me: string; members: Member[]; householdId: string }) {
   const [pending, startTransition] = useTransition();
+  const nestPath = useNestPath();
   const newest = events[0]?.createdAt;
 
   return (
@@ -42,7 +44,7 @@ export function NewSinceCard({ events, total, me, members, householdId }: { even
         items={events.map((event) => ({ id: event.id, node: <ActivityItem event={event} me={me} members={members} compact /> }))}
       />
       {total > events.length && (
-        <Link href="/activity" className="mt-1 inline-block rounded-lg px-1 py-1 text-sm font-semibold text-accent hover:bg-accent-soft">
+        <Link href={nestPath("/activity")} className="mt-1 inline-block rounded-lg px-1 py-1 text-sm font-semibold text-accent hover:bg-accent-soft">
           and {total - events.length} more
         </Link>
       )}

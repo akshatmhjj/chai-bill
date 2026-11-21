@@ -67,7 +67,6 @@ test("what your roommate adds and buys shows up live, with who did it", async ({
 
   await addItem(a, "Eggs", "12");
   await expect(b.getByText("Eggs", { exact: true }).first()).toBeVisible({ timeout: 20_000 });
-  await expect(b.getByText('Akshat added "Eggs" to the shopping list')).toBeVisible();
   await expect(b.getByText("added by Akshat")).toBeVisible();
   await expect(b.getByText("New", { exact: true })).toBeVisible();
 

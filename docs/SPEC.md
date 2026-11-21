@@ -2,7 +2,7 @@
 
 Status: v1 draft (2026-11-20). Owner: Akshat.
 
-Chai Bill is a shared-living and expense app for flatmates in Bangalore: a flat holds up to 15 people (raised from two in M7). It is built to be used every day by the two of us, and to be a strong portfolio piece. It is deliberately not a generic split-bill app: it is opinionated about INR, UPI, and the rhythm of shared flats.
+Chai Bill is a shared-living and expense app for housemates in Bangalore: a nest holds up to 15 people (raised from two in M7). It is built to be used every day by the two of us, and to be a strong portfolio piece. It is deliberately not a generic split-bill app: it is opinionated about INR, UPI, and the rhythm of shared homes.
 
 ---
 
@@ -20,7 +20,7 @@ Chai Bill is a shared-living and expense app for flatmates in Bangalore: a flat 
    - Each settlement records method (`upi`, `cash`, `other`), optional reference (e.g. UPI transaction ID), date, and note.
    - Full settlement history. Settlements are soft-deleted, never hard-deleted.
 3. **Realtime sync and activity feed**
-   - Changes made by one flatmate appear on everyone's screen without a refresh (Supabase Realtime, filtered by `household_id`).
+   - Changes made by one housemate appear on everyone's screen without a refresh (Supabase Realtime, filtered by `household_id`).
    - Activity feed records: expense created/edited/deleted, settlement recorded/deleted, shopping item added/bought.
 4. **Shared shopping list**
    - Open and bought items, quantity text, who added it, who bought it.
@@ -115,7 +115,7 @@ Full definition: [supabase/migrations/20261120000000_init_chai_bill.sql](../supa
 
 | Table | Purpose | Key constraints |
 |---|---|---|
-| `households` | A flat. | `name` 1–60 chars. Created only via `create_household()` RPC. |
+| `households` | A nest (one shared home). | `name` 1–60 chars. Created only via `create_household()` RPC. |
 | `household_members` | Membership, display name. | PK `(household_id, user_id)`. |
 | `household_invites` | Single-use join codes. | 7-day expiry, consumed by `join_household()`. |
 | `expenses` | Personal or shared expense header. | `amount_paise > 0`, `currency = 'INR'`, scope/household/payer consistency checks, soft delete via `deleted_at`. |
@@ -194,7 +194,7 @@ in sections 2 to 4 changed: the money rules, balance derivation and RLS model ar
 
 ### 7.1 Scope added
 
-- **Flat size.** A flat holds up to **15 people** (`household_member_cap()`, migration `20261125000000`). Balances, settle-up and the feed work for any number of members. The settle-up screen shows what you owe or are owed by each person, using the suggested plan.
+- **Nest size.** A nest holds up to **15 people** (`household_member_cap()`, migration `20261125000000`). Balances, settle-up and the feed work for any number of members. The settle-up screen shows what you owe or are owed by each person, using the suggested plan.
 - **Profiles.** A name and one of ten avatars per person, chosen during onboarding and editable later.
   Shown wherever a person is identified. Each avatar also gives its owner a subtle personal accent colour.
 - **Expense categories** (optional): groceries, food, rent, bills, travel, home stuff, fun, health, other.
@@ -208,7 +208,7 @@ in sections 2 to 4 changed: the money rules, balance derivation and RLS model ar
 
 | Change | Detail |
 | --- | --- |
-| `profiles` | `user_id`, `display_name` (1 to 40), `avatar_key` (one of ten). Readable by the person and by people they share a flat with. Written only by `update_profile()`, which also updates their `household_members.display_name`. |
+| `profiles` | `user_id`, `display_name` (1 to 40), `avatar_key` (one of ten). Readable by the person and by people they share a nest with. Written only by `update_profile()`, which also updates their `household_members.display_name`. |
 | `household_members.activity_seen_at` | The read marker. `mark_activity_seen(household, until)` moves it forward only, never into the future, for the caller only. |
 | `expenses.category` | Optional, constrained to the nine keys. `upsert_expense()` takes it as a last, defaulted argument. |
 | `activity_events.kind` | Adds `expense_edited`. Expense events also carry `category` and `paid_by` in their payload. |
@@ -222,6 +222,8 @@ of seconds. A person's own actions are never unread for them.
 
 ### 7.4 Routes
 
-`/login`, `/onboarding/{profile,flat,invite}`, then inside the signed-in shell: `/` (home), `/expenses`,
-`/expenses/new`, `/expenses/[id]/edit`, `/balances` (settle up), `/shopping`, `/activity`, `/profile`.
+`/login`, `/onboarding/profile`, then `/` lists the person's nests (with `/nests/new` to make one and a code box to join one).
+Inside a nest, everything lives under `/n/[nestId]`: `/` (home), `/expenses`, `/expenses/new`,
+`/expenses/[id]/edit`, `/balances` (settle up), `/shopping`, `/activity`, `/invite` (short code, QR, refresh).
+Join links are `/join/[code]`. `/profile` is the person's own page.
 

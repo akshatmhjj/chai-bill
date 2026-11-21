@@ -3,8 +3,9 @@ import { open, ready, twoRoommates } from "./helpers";
 
 test("changing your name and avatar updates your profile and reaches your roommate live", async ({ browser }) => {
   const { aContext, bContext, a, b } = await twoRoommates(browser);
-  await open(b, "/profile");
-  await expect(b.getByText("Akshat", { exact: true })).toBeVisible();
+  // Yashwardhan's nest home lists Akshat by name.
+  await open(b, "/");
+  await expect(b.locator("main").getByText(/Akshat/).first()).toBeVisible();
 
   await open(a, "/profile");
   await a.getByRole("button", { name: "Edit profile" }).click();
@@ -17,7 +18,7 @@ test("changing your name and avatar updates your profile and reaches your roomma
   await expect(a.getByRole("heading", { name: "Akshat M" })).toBeVisible();
   await expect(a.getByRole("main").getByText("Cat · Does what it likes")).toBeVisible();
 
-  await expect(b.getByText("Akshat M", { exact: true })).toBeVisible({ timeout: 30_000 });
+  await expect(b.locator("main").getByText(/Akshat M/).first()).toBeVisible({ timeout: 30_000 });
 
   await aContext.close();
   await bContext.close();

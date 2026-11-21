@@ -5,13 +5,14 @@ import { Calendar, Equal, Lock, Percent, Trash2, Users, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { deleteExpenseAction, saveExpenseAction } from "@/app/(app)/expenses/actions";
+import { deleteExpenseAction, saveExpenseAction } from "@/app/(app)/n/[nestId]/expenses/actions";
 import { Avatar } from "@/components/avatar/Avatar";
 import { AmountInput } from "@/components/ui/AmountInput";
 import { Button } from "@/components/ui/Button";
 import { Segmented } from "@/components/ui/Segmented";
 import { Sheet } from "@/components/ui/Sheet";
 import { useToast } from "@/components/ui/Toast";
+import { useNestId, useNestPath } from "@/components/nest/NestContext";
 import { CATEGORIES, CATEGORY_KEYS, guessCategory, type CategoryKey } from "@/lib/categories";
 import type { Member } from "@/lib/data/context";
 import type { ExpenseView } from "@/lib/data/queries";
@@ -48,6 +49,8 @@ export function ExpenseForm({
   expense?: ExpenseView;
 }) {
   const router = useRouter();
+  const nestId = useNestId();
+  const nestPath = useNestPath();
   const { toast } = useToast();
   const editing = Boolean(expense);
 
@@ -97,6 +100,7 @@ export function ExpenseForm({
   const participants = useMemo(() => members.filter((m) => included.has(m.userId)).map((m) => m.userId), [members, included]);
   const parsed = useMemo(() => {
     const form = new FormData();
+    form.set("nestId", nestId);
     form.set("scope", scope);
     form.set("description", description);
     form.set("amount", amount);
@@ -110,7 +114,7 @@ export function ExpenseForm({
       form.set(`percent_${id}`, percent[id] ?? "");
     }
     return { form, result: parseExpenseForm(form, me.userId) };
-  }, [scope, description, amount, date, category, paidBy, method, participants, exact, percent, me.userId]);
+  }, [nestId, scope, description, amount, date, category, paidBy, method, participants, exact, percent, me.userId]);
 
   let totalPaise = 0;
   let amountProblem: string | null = null;
@@ -169,7 +173,7 @@ export function ExpenseForm({
       const result = await saveExpenseAction(expense?.id ?? null, parsed.form);
       if (!result.ok) return setError(result.error);
       toast({ title: editing ? "Expense updated" : "Expense added", description: `${description.trim()} · ${formatINRCompact(totalPaise)}` });
-      router.push("/expenses");
+      router.push(nestPath("/expenses"));
     });
   }
 
@@ -182,7 +186,7 @@ export function ExpenseForm({
         return setError(result.error);
       }
       toast({ title: "Expense deleted", description: expense.description });
-      router.push("/expenses");
+      router.push(nestPath("/expenses"));
     });
   }
 
@@ -191,7 +195,7 @@ export function ExpenseForm({
   return (
     <div className="mx-auto w-full max-w-xl pb-28 lg:pb-10">
       <div className="sticky top-0 z-20 -mx-4 flex items-center justify-between bg-canvas/90 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:bg-transparent lg:px-0">
-        <Link href="/expenses" aria-label="Close" className="-ml-2 flex size-10 items-center justify-center rounded-full text-ink-2 transition-colors hover:bg-sunken active:scale-95">
+        <Link href={nestPath("/expenses")} aria-label="Close" className="-ml-2 flex size-10 items-center justify-center rounded-full text-ink-2 transition-colors hover:bg-sunken active:scale-95">
           <X className="size-6" aria-hidden />
         </Link>
         <h1 className="font-display text-xl font-semibold">{editing ? "Edit expense" : "Add expense"}</h1>
@@ -268,7 +272,7 @@ export function ExpenseForm({
         {scope === "personal" ? (
           <p className="-mt-3 flex items-center gap-2 rounded-xl bg-sunken px-3.5 py-3 text-sm text-ink-2">
             <Lock className="size-4 shrink-0" aria-hidden />
-            Only you can see this. It never affects what anyone in the flat owes.
+            Only you can see this. It never affects what anyone in the nest owes.
           </p>
         ) : (
           <>

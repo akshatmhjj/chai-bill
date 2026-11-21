@@ -1,7 +1,7 @@
 import { isCategoryKey, type CategoryKey } from "@/lib/categories";
 import { buildHouseholdSummary, type HouseholdSummary } from "@/lib/money/summary";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { OnboardedContext } from "./context";
+import type { NestContext } from "./context";
 
 export interface ExpenseShareView {
   userId: string;
@@ -171,7 +171,7 @@ export async function loadActivity(householdId: string, limit = 80): Promise<Act
 }
 
 /** Balances, the settle-up plan and the "why" behind each balance. Shared expenses only. */
-export async function loadSummary(ctx: OnboardedContext): Promise<HouseholdSummary> {
+export async function loadSummary(ctx: NestContext): Promise<HouseholdSummary> {
   const supabase = await createSupabaseServerClient();
   const [{ data: expenseRows }, { data: settlementRows }] = await Promise.all([
     supabase
@@ -203,7 +203,7 @@ export async function loadSummary(ctx: OnboardedContext): Promise<HouseholdSumma
 }
 
 /** What the flat spent together since `monthStart`, and the part that is this person's. */
-export async function loadMonthStats(ctx: OnboardedContext, monthStart: string): Promise<{ totalPaise: number; yourSharePaise: number }> {
+export async function loadMonthStats(ctx: NestContext, monthStart: string): Promise<{ totalPaise: number; yourSharePaise: number }> {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("expenses")

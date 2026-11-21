@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { addExpense, completeProfile, createFlat, open, ready, signIn, twoRoommates, uniqueEmail } from "./helpers";
+import { addExpense, completeProfile, createNest, open, ready, signIn, twoRoommates, uniqueEmail } from "./helpers";
 
 const SHOTS = path.join(process.cwd(), "docs", "screenshots");
 fs.mkdirSync(SHOTS, { recursive: true });
@@ -19,7 +19,7 @@ async function noSidewaysScroll(page: Page, label: string) {
 
 test("every screen fits every width, the nav adapts, and the README screenshots are captured", async ({ browser }) => {
   test.setTimeout(300_000);
-  const { aContext, bContext, a, b } = await twoRoommates(browser, { flatName: "4B Koramangala" });
+  const { aContext, bContext, a, b } = await twoRoommates(browser, { nestName: "4B Koramangala" });
 
   // Realistic content, so the layouts are tested with real rows.
   await addExpense(a, { amount: "1840", description: "BigBasket groceries" });
@@ -58,9 +58,9 @@ test("every screen fits every width, the nav adapts, and the README screenshots 
     await open(a, "/");
     if (width < 1024) {
       await expect(a.getByRole("button", { name: "Add something" })).toBeVisible();
-      await expect(a.getByRole("link", { name: "Chai Bill home" })).toBeHidden();
+      await expect(a.getByRole("link", { name: "All nests" }).first()).toBeHidden();
     } else {
-      await expect(a.getByRole("link", { name: "Chai Bill home" })).toBeVisible();
+      await expect(a.getByRole("link", { name: "All nests" }).first()).toBeVisible();
       await expect(a.getByRole("button", { name: "Add something" })).toBeHidden();
     }
   }
@@ -114,8 +114,8 @@ test("the sign-in and onboarding screens fit a small phone", async ({ browser })
   await page.screenshot({ path: path.join(SHOTS, "onboarding-avatar.png") });
 
   await completeProfile(page, "Akshat", "Fox");
-  await noSidewaysScroll(page, "flat step");
-  await createFlat(page, "4B Koramangala");
+  await noSidewaysScroll(page, "nest step");
+  await createNest(page, "4B Koramangala");
   await noSidewaysScroll(page, "invite step");
   await page.waitForTimeout(900); // let the entrance animation finish before the picture
   await page.screenshot({ path: path.join(SHOTS, "onboarding-invite.png") });
@@ -144,8 +144,7 @@ test("on a phone the + opens quick actions that go straight to the right place",
   await expect(a.getByLabel("Item name")).toBeFocused();
 
   // The full-screen expense form hides the bottom bar and has its own close button.
-  await a.goto("/expenses/new");
-  await ready(a);
+  await open(a, "/expenses/new");
   await expect(a.getByRole("button", { name: "Add something" })).toBeHidden();
   await a.getByRole("link", { name: "Close" }).click();
   await expect(a).toHaveURL(/\/expenses$/);

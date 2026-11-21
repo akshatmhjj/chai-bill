@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { CheckCheck } from "lucide-react";
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { markActivitySeenAction } from "@/app/(app)/activity/actions";
+import { markActivitySeenAction } from "@/app/(app)/n/[nestId]/activity/actions";
 import { IllustrationQuiet } from "@/components/brand/Illustrations";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";

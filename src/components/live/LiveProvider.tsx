@@ -17,9 +17,11 @@ interface LivePerson {
 interface LiveContextValue {
   /** True for a few seconds after your roommate changes the thing with this id. */
   isFresh: (id: string) => boolean;
+  /** The name a person is known by right now: their latest rename if one arrived live, else `fallback`. */
+  nameOf: (userId: string, fallback: string) => string;
 }
 
-const LiveContext = createContext<LiveContextValue>({ isFresh: () => false });
+const LiveContext = createContext<LiveContextValue>({ isFresh: () => false, nameOf: (_id, fallback) => fallback });
 
 export function useLive(): LiveContextValue {
   return useContext(LiveContext);
@@ -28,13 +30,24 @@ export function useLive(): LiveContextValue {
 const FRESH_MS = 6000;
 
 /**
- * Re-fetches what is on screen. router.refresh() re-renders the layouts (the unread badge, the
- * sidebar), but in testing it did not always redraw a changed row on the page. A navigation to the
- * same URL does redraw the page, but leaves the layouts alone. So do both, one after the other.
+ * While a link is being followed, live updates wait. A refresh started mid-navigation cancels the
+ * navigation, which is why a tap on Edit used to need several goes.
  */
-function refetchCurrentPage(router: { refresh: () => void; replace: (href: string, options?: { scroll?: boolean }) => void }) {
+let navigatingUntil = 0;
+if (typeof document !== "undefined") {
+  document.addEventListener(
+    "click",
+    (event) => {
+      const link = (event.target as Element | null)?.closest?.("a[href]");
+      if (link) navigatingUntil = Date.now() + 2500;
+    },
+    true,
+  );
+}
+
+function refetchCurrentPage(router: { refresh: () => void }, retry: () => void) {
+  if (Date.now() < navigatingUntil) return retry();
   router.refresh();
-  setTimeout(() => router.replace(window.location.pathname + window.location.search, { scroll: false }), 600);
 }
 
 /**
@@ -61,6 +74,9 @@ export function LiveProvider({
   const router = useRouter();
   const { toast } = useToast();
   const [fresh, setFresh] = useState<ReadonlySet<string>>(new Set());
+  // Names that changed while this page is open. Server data is also refreshed, but the names are shown
+  // from here so a rename reaches every screen at once.
+  const [renamed, setRenamed] = useState<Readonly<Record<string, string>>>({});
   const peopleRef = useRef(people);
   useEffect(() => {
     peopleRef.current = people;
@@ -74,7 +90,11 @@ export function LiveProvider({
 
     const refresh = () => {
       clearTimeout(refreshTimer);
-      refreshTimer = setTimeout(() => refetchCurrentPage(router), 250);
+      const run = (): void => {
+        refreshTimer = setTimeout(() => refetchCurrentPage(router, () => run()), 250);
+      };
+      clearTimeout(refreshTimer);
+      run();
     };
 
     const markFresh = (id: string) => {
@@ -134,11 +154,21 @@ export function LiveProvider({
         const row = change.new as { user_id: string; display_name: string };
         refresh();
         if (row.user_id !== userId) {
-          toast({ title: `${row.display_name} joined your flat`, description: "You can start splitting things now." });
+          toast({ title: `${row.display_name} joined your nest`, description: "You can start splitting things now." });
         }
       },
     );
-    channel.on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, refresh);
+    // A rename changes what the page shows for everyone. A plain refresh can be dropped here, so this
+    // re-navigates to the same page, which always draws the new names.
+    channel.on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "profiles" },
+      (change) => {
+        const row = change.new as { user_id?: string; display_name?: string };
+        if (row.user_id && row.display_name) setRenamed((current) => ({ ...current, [row.user_id as string]: row.display_name as string }));
+        refresh();
+      },
+    );
     // A name change is written to the flat's member row too, so listen there as well.
     channel.on(
       "postgres_changes",
@@ -160,6 +190,9 @@ export function LiveProvider({
     };
   }, [householdId, userId, router, toast]);
 
-  const value = useMemo<LiveContextValue>(() => ({ isFresh: (id) => fresh.has(id) }), [fresh]);
+  const value = useMemo<LiveContextValue>(
+    () => ({ isFresh: (id) => fresh.has(id), nameOf: (userId, fallback) => renamed[userId] ?? fallback }),
+    [fresh, renamed],
+  );
   return <LiveContext.Provider value={value}>{children}</LiveContext.Provider>;
 }

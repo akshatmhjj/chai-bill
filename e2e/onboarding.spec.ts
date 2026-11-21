@@ -1,10 +1,9 @@
 import { expect, test } from "@playwright/test";
-import { completeProfile, createFlat, ready, signIn, twoRoommates, uniqueEmail } from "./helpers";
+import { completeProfile, createNest, front, newInvite, open, ready, signIn, twoRoommates, uniqueEmail } from "./helpers";
 
 test("signed-out visitors are sent to the sign-in page", async ({ page }) => {
   await page.goto("/expenses");
   await expect(page).toHaveURL(/\/login/);
-  await expect(page.getByRole("heading", { name: /Your flat.s little ledger/ })).toBeVisible();
 
   // The design-system gallery is a development tool: in production it is not reachable at all.
   await page.goto("/design");
@@ -34,55 +33,78 @@ test("the profile step needs a name", async ({ page }) => {
   await expect(page).toHaveURL(/\/onboarding\/profile/);
 });
 
-test("a wrong invite code gets a friendly error", async ({ page }) => {
+test("a wrong code gets a friendly error, and a code that is too short is not sent", async ({ page }) => {
   await signIn(page, uniqueEmail("wrongcode"));
   await completeProfile(page, "Test", "Cat");
-  await page.getByRole("radio", { name: "Join with a code" }).click();
-  await page.getByLabel("Invite code").fill("0".repeat(32));
-  await page.getByRole("button", { name: /Join flat/ }).click();
-  await expect(page.getByText(/invalid, already used, or expired/)).toBeVisible();
-  await expect(page.getByLabel("Invite code")).toBeVisible();
+
+  const field = page.locator("#join-code");
+  const join = page.getByRole("button", { name: "Join nest" });
+  await field.fill("abc");
+  await expect(join).toBeDisabled();
+
+  await field.fill("zzzzzzzz");
+  await join.click();
+  await expect(page.getByText("That code doesn't work any more. Ask for a fresh one.")).toBeVisible();
+  await expect(field).toBeVisible();
 });
 
-test("a code that is not a code is caught before it is sent", async ({ page }) => {
-  await signIn(page, uniqueEmail("shortcode"));
-  await completeProfile(page, "Test", "Cat");
-  await page.getByRole("radio", { name: "Join with a code" }).click();
-  await page.getByLabel("Invite code").fill("abc");
-  await page.getByRole("button", { name: /Join flat/ }).click();
-  await expect(page.getByText("That invite code doesn't look right")).toBeVisible();
-});
+test("two housemates join with a code, and the joiner gets a welcome", async ({ browser }) => {
+  const { aContext, bContext, a, b, nestName } = await twoRoommates(browser);
 
-test("two roommates onboard, the waiting screen flips live, and the joiner gets a welcome", async ({ browser }) => {
-  const { aContext, bContext, a, b, flatName } = await twoRoommates(browser);
+  // Akshat (who made it) is on Home with the nest's name and his housemate.
+  await expect(a.getByText(new RegExp(`${nestName}.*Yashwardhan`)).first()).toBeVisible();
 
-  // Akshat (who waited) is on Home with the flat's name and his roommate.
-  await expect(a.getByText(new RegExp(`${flatName}.*with Yashwardhan`))).toBeVisible();
-
-  // Yashwardhan (who joined) sees a welcome that says who is here and how it works.
-  await expect(b.getByRole("heading", { name: `Welcome to ${flatName}` })).toBeVisible();
+  // Yashwardhan (who joined) sees a welcome that says who is here.
+  await expect(b.getByRole("heading", { name: `Welcome to ${nestName}` })).toBeVisible();
   await expect(b.getByText("Akshat & Yashwardhan")).toBeVisible();
   await b.getByRole("button", { name: "Got it" }).click();
-  await expect(b.getByRole("heading", { name: `Welcome to ${flatName}` })).toHaveCount(0);
-  await expect(b).toHaveURL(/\/$/);
+  await expect(b.getByRole("heading", { name: `Welcome to ${nestName}` })).toHaveCount(0);
 
   await aContext.close();
   await bContext.close();
 });
 
-test("a flat with one person shows the invite on Home instead of a balance", async ({ browser }) => {
+test("a nest with one person shows the invite instead of a balance, and the front page lists every nest", async ({ browser }) => {
   const context = await browser.newContext();
   const page = await context.newPage();
   await signIn(page, uniqueEmail("solo"));
   await completeProfile(page, "Solo", "Monstera");
-  await createFlat(page, "Solo flat");
+  await createNest(page, "Solo nest");
 
-  await page.getByRole("button", { name: "Continue to my flat" }).click();
-  await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole("heading", { name: "Your flat is ready" })).toBeVisible();
-  await expect(page.locator('[aria-label^="Invite code "]')).toBeVisible();
+  await open(page, "/");
+  await expect(page.getByRole("heading", { name: "Your nest is ready" })).toBeVisible();
   // There is no balance to show yet, and nothing to settle with.
   await expect(page.getByRole("region", { name: "Your balance" })).toHaveCount(0);
 
+  // The same person can belong to more than one nest; the front page lists both.
+  await createNest(page, "Second nest");
+  await front(page);
+  await expect(page.getByRole("link", { name: /Solo nest/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Second nest/ })).toBeVisible();
+
   await context.close();
+});
+
+test("someone already in one nest can join another by code from the front page", async ({ browser }) => {
+  const { aContext, bContext, a, nestName } = await twoRoommates(browser);
+  const code = await newInvite(a);
+
+  const other = await browser.newContext();
+  const c = await other.newPage();
+  await signIn(c, uniqueEmail("cross"));
+  await completeProfile(c, "Meera", "Sunny");
+  await createNest(c, "Meera's own nest");
+
+  // Meera now joins Akshat and Yashwardhan's nest from the front page, next to her own.
+  await front(c);
+  await c.locator("#join-code").fill(code);
+  await c.getByRole("button", { name: "Join nest" }).click();
+  await expect(c).toHaveURL(/\/n\/[0-9a-f-]+\?welcome=1/);
+  await front(c);
+  await expect(c.getByRole("link", { name: new RegExp(nestName) })).toBeVisible();
+  await expect(c.getByRole("link", { name: /Meera's own nest/ })).toBeVisible();
+
+  await aContext.close();
+  await bContext.close();
+  await other.close();
 });

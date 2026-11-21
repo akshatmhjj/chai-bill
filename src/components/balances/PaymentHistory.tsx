@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, Banknote, Smartphone, Trash2, Wallet } from "lucide-react";
 import { useState, useTransition } from "react";
-import { deleteSettlementAction } from "@/app/(app)/balances/actions";
+import { deleteSettlementAction } from "@/app/(app)/n/[nestId]/balances/actions";
 import { Avatar } from "@/components/avatar/Avatar";
 import { useLive } from "@/components/live/LiveProvider";
 import { Button } from "@/components/ui/Button";
@@ -125,7 +125,7 @@ export function PaymentHistory({ settlements, me, members, seenAt, today }: { se
         {target && (
           <div className="pb-2">
             <p className="text-ink-2">
-              <Money paise={target.amountPaise} className="font-semibold text-ink" /> to {person(target.toUser)?.name ?? "your roommate"} on {dayLabel(target.settledOn, today)}
+              <Money paise={target.amountPaise} className="font-semibold text-ink" /> to {person(target.toUser)?.name ?? "your housemate"} on {dayLabel(target.settledOn, today)}
             </p>
             {error && <p role="alert" className="mt-2 text-sm text-negative">{error}</p>}
           </div>

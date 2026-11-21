@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { avatarOrDefault, type AvatarKey } from "@/lib/avatars";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -10,60 +10,95 @@ export interface Member {
   joinedAt: string;
 }
 
-export interface AppContext {
+/** The person, and every nest they belong to. */
+export interface PersonContext {
   userId: string;
   email: string | null;
-  /** The person's own profile; null until they finish the first onboarding step. */
-  profile: { name: string; avatar: AvatarKey } | null;
-  household: { id: string; name: string } | null;
-  members: Member[];
-  me: Member | null;
-  /** Everyone else in the flat, in the order they joined. Empty until someone else joins. */
-  others: Member[];
-  /** How far through the activity feed this person has read. */
-  seenAt: string | null;
+  profile: { name: string; avatar: AvatarKey };
+  nests: { id: string; name: string; memberCount: number }[];
 }
 
-export type OnboardedContext = AppContext & {
-  profile: NonNullable<AppContext["profile"]>;
-  household: NonNullable<AppContext["household"]>;
+/** Everything a screen inside one nest needs. Only built for members of that nest. */
+export interface NestContext {
+  userId: string;
+  email: string | null;
+  profile: { name: string; avatar: AvatarKey };
+  household: { id: string; name: string };
+  members: Member[];
   me: Member;
+  /** Everyone else in this nest, in the order they joined. */
+  others: Member[];
+  /** How far through this nest's activity feed this person has read. */
   seenAt: string;
-};
+}
 
-/**
- * Everything the shell needs about the signed-in person, fetched once per request.
- * Returns null when signed out.
- */
-export const getAppContext = cache(async (): Promise<AppContext | null> => {
+/** The signed-in person, with their profile and nests. Null when signed out. Cached per request. */
+export const getPersonContext = cache(async (): Promise<PersonContext | null | "no-profile"> => {
   const supabase = await createSupabaseServerClient();
   const { data: auth } = await supabase.auth.getUser();
   const user = auth.user;
   if (!user) return null;
 
-  const [{ data: profileRow }, { data: membership }] = await Promise.all([
-    supabase.from("profiles").select("display_name, avatar_key").eq("user_id", user.id).maybeSingle(),
-    supabase.from("household_members").select("household_id, activity_seen_at").eq("user_id", user.id).maybeSingle(),
-  ]);
+  const { data: profileRow } = await supabase.from("profiles").select("display_name, avatar_key").eq("user_id", user.id).maybeSingle();
+  if (!profileRow) return "no-profile";
 
-  const profile = profileRow
-    ? { name: profileRow.display_name as string, avatar: avatarOrDefault(profileRow.avatar_key) }
-    : null;
+  const { data: memberships } = await supabase
+    .from("household_members")
+    .select("household_id, households(id, name)")
+    .eq("user_id", user.id)
+    .order("joined_at", { ascending: true });
 
-  if (!membership) {
-    return { userId: user.id, email: user.email ?? null, profile, household: null, members: [], me: null, others: [], seenAt: null };
-  }
+  const ids = (memberships ?? []).map((m) => m.household_id as string);
+  const { data: counts } = ids.length
+    ? await supabase.from("household_members").select("household_id").in("household_id", ids)
+    : { data: [] as { household_id: string }[] };
+  const countById = new Map<string, number>();
+  for (const row of counts ?? []) countById.set(row.household_id, (countById.get(row.household_id) ?? 0) + 1);
 
-  const householdId = membership.household_id as string;
+  const nests = (memberships ?? []).map((m) => {
+    const h = m.households as unknown as { id: string; name: string } | null;
+    return { id: m.household_id as string, name: h?.name ?? "Nest", memberCount: countById.get(m.household_id as string) ?? 1 };
+  });
+
+  return {
+    userId: user.id,
+    email: user.email ?? null,
+    profile: { name: profileRow.display_name as string, avatar: avatarOrDefault(profileRow.avatar_key) },
+    nests,
+  };
+});
+
+/** For screens outside any nest: signed in and with a profile. Otherwise sends the person on. */
+export async function requireProfile(): Promise<PersonContext> {
+  const person = await getPersonContext();
+  if (person === null) redirect("/login");
+  if (person === "no-profile") redirect("/onboarding/profile");
+  return person;
+}
+
+/** The nest context for a member of `nestId`. Null when the person isn't in that nest. */
+export const getNestContext = cache(async (nestId: string): Promise<NestContext | null> => {
+  const person = await getPersonContext();
+  if (!person || person === "no-profile") return null;
+
+  const supabase = await createSupabaseServerClient();
+  const { data: membership } = await supabase
+    .from("household_members")
+    .select("activity_seen_at")
+    .eq("household_id", nestId)
+    .eq("user_id", person.userId)
+    .maybeSingle();
+  if (!membership) return null;
+
   const [{ data: household }, { data: memberRows }] = await Promise.all([
-    supabase.from("households").select("id, name").eq("id", householdId).single(),
-    supabase.from("household_members").select("user_id, display_name, joined_at").eq("household_id", householdId).order("joined_at"),
+    supabase.from("households").select("id, name").eq("id", nestId).single(),
+    supabase.from("household_members").select("user_id, display_name, joined_at").eq("household_id", nestId).order("joined_at"),
   ]);
 
   const ids = (memberRows ?? []).map((m) => m.user_id as string);
   const { data: profileRows } = ids.length
-    ? await supabase.from("profiles").select("user_id, display_name, avatar_key").in("user_id", ids)
-    : { data: [] as { user_id: string; display_name: string; avatar_key: string }[] };
+    ? await supabase.from("profiles").select("user_id, avatar_key").in("user_id", ids)
+    : { data: [] as { user_id: string; avatar_key: string }[] };
   const avatarByUser = new Map((profileRows ?? []).map((p) => [p.user_id as string, avatarOrDefault(p.avatar_key)]));
 
   const members: Member[] = (memberRows ?? []).map((m) => ({
@@ -73,32 +108,33 @@ export const getAppContext = cache(async (): Promise<AppContext | null> => {
     joinedAt: m.joined_at as string,
   }));
 
-  const me = members.find((m) => m.userId === user.id) ?? null;
-  const others = members.filter((m) => m.userId !== user.id);
+  const me = members.find((m) => m.userId === person.userId);
+  if (!me || !household) return null;
 
   return {
-    userId: user.id,
-    email: user.email ?? null,
-    profile,
-    household: household ? { id: household.id as string, name: household.name as string } : null,
+    userId: person.userId,
+    email: person.email,
+    profile: person.profile,
+    household: { id: household.id as string, name: household.name as string },
     members,
     me,
-    others,
+    others: members.filter((m) => m.userId !== person.userId),
     seenAt: membership.activity_seen_at as string,
   };
 });
 
-/** For pages inside the app: signed in, has a profile, and belongs to a flat. Otherwise sends them on. */
-export async function requireOnboarded(): Promise<OnboardedContext> {
-  const ctx = await getAppContext();
-  if (!ctx) redirect("/login");
-  if (!ctx.profile) redirect("/onboarding/profile");
-  if (!ctx.household || !ctx.me || !ctx.seenAt) redirect("/onboarding/flat");
-  return ctx as OnboardedContext;
+/** For a page inside a nest: 404 unless the person is a member of it. */
+export async function requireNest(nestId: string): Promise<NestContext> {
+  const person = await getPersonContext();
+  if (person === null) redirect("/login");
+  if (person === "no-profile") redirect("/onboarding/profile");
+  const ctx = await getNestContext(nestId);
+  if (!ctx) notFound();
+  return ctx;
 }
 
-/** The count of events by someone else that this person has not looked at yet. */
-export async function countUnread(ctx: OnboardedContext): Promise<number> {
+/** The count of events by others that this person has not seen yet, in one nest. */
+export async function countUnread(ctx: NestContext): Promise<number> {
   const supabase = await createSupabaseServerClient();
   const { count } = await supabase
     .from("activity_events")

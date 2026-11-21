@@ -24,7 +24,7 @@ test("your own actions are never counted as new for you, but are for your roomma
 
   await open(a, "/");
   await expect(a.getByLabel(/\d+ new/)).toHaveCount(0);
-  await expect(a.getByRole("heading", { name: /New from/ })).toHaveCount(0);
+  await expect(a.getByRole("heading", { name: /New since your last visit/ })).toHaveCount(0);
 
   await expect(b.getByLabel("1 new").first()).toBeVisible({ timeout: 20_000 });
 

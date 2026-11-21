@@ -5,7 +5,7 @@ import { Lock, Pencil, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import { deleteExpenseAction } from "@/app/(app)/expenses/actions";
+import { deleteExpenseAction } from "@/app/(app)/n/[nestId]/expenses/actions";
 import { Avatar } from "@/components/avatar/Avatar";
 import { IllustrationReceipt } from "@/components/brand/Illustrations";
 import { Button, buttonStyles } from "@/components/ui/Button";
@@ -14,6 +14,8 @@ import { Money } from "@/components/ui/Money";
 import { Segmented } from "@/components/ui/Segmented";
 import { Sheet } from "@/components/ui/Sheet";
 import { useToast } from "@/components/ui/Toast";
+import { useNestPath } from "@/components/nest/NestContext";
+import { PendingLink } from "@/components/ui/PendingLink";
 import { CATEGORIES } from "@/lib/categories";
 import type { Member } from "@/lib/data/context";
 import type { ExpenseView } from "@/lib/data/queries";
@@ -42,6 +44,7 @@ export function ExpenseList({
   month: { totalPaise: number; yourSharePaise: number };
   openId?: string;
 }) {
+  const nestPath = useNestPath();
   const [filter, setFilter] = useState<Filter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(openId ?? null);
 
@@ -86,11 +89,11 @@ export function ExpenseList({
             title={filter === "personal" ? "No personal expenses" : filter === "shared" ? "No shared expenses yet" : "No expenses yet"}
             description={
               filter === "personal"
-                ? "Things you track just for yourself show up here, and nobody else in the flat sees them."
+                ? "Things you track just for yourself show up here, and nobody else in the nest sees them."
                 : "Add the first one and it shows up here, with who paid and how it was split."
             }
             action={
-              <Link href="/expenses/new" className={buttonStyles()}>
+              <Link href={nestPath("/expenses/new")} className={buttonStyles()}>
                 Add an expense
               </Link>
             }
@@ -138,6 +141,7 @@ export function ExpenseList({
 
 function ExpenseDetails({ expense, me, members, onClose }: { expense: ExpenseView | null; me: Member; members: Member[]; onClose: () => void }) {
   const router = useRouter();
+  const nestPath = useNestPath();
   const { toast } = useToast();
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -185,10 +189,10 @@ function ExpenseDetails({ expense, me, members, onClose }: { expense: ExpenseVie
               <Button variant="danger" size="lg" onClick={() => setConfirming(true)} aria-label="Delete expense">
                 <Trash2 className="size-5" aria-hidden />
               </Button>
-              <Link href={`/expenses/${expense.id}/edit`} className={buttonStyles({ size: "lg", full: true })}>
+              <PendingLink href={nestPath(`/expenses/${expense.id}/edit`)} className={buttonStyles({ size: "lg", full: true })}>
                 <Pencil className="size-4" aria-hidden />
                 Edit
-              </Link>
+              </PendingLink>
             </div>
           )
         ) : undefined

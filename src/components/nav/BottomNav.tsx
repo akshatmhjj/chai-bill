@@ -6,16 +6,16 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Sheet } from "@/components/ui/Sheet";
-import { isActive, NAV_ITEMS } from "./items";
+import { isActive, nestHref, NAV_ITEMS } from "./items";
+
+/** Full-screen forms take over the phone: they have their own close button and a sticky save bar. */
+const FULL_SCREEN = [/^\/n\/[^/]+\/expenses\/new$/, /^\/n\/[^/]+\/expenses\/[^/]+\/edit$/];
 
 /**
- * The phone navigation: Home, Expenses, a raised "+", Shopping, Activity.
- * The "+" opens quick actions so the common jobs are one thumb tap away from anywhere.
+ * The phone navigation: Home, Expenses, a raised "+", Shopping, Activity. The "+" opens quick actions,
+ * so the common jobs are one thumb tap away from anywhere in the nest.
  */
-/** Full-screen forms take over the phone: they have their own close button and a sticky save bar. */
-const FULL_SCREEN = [/^\/expenses\/new$/, /^\/expenses\/[^/]+\/edit$/];
-
-export function BottomNav({ unread }: { unread: number }) {
+export function BottomNav({ nestId, unread }: { nestId: string; unread: number }) {
   const pathname = usePathname();
   const [quickOpen, setQuickOpen] = useState(false);
   const hidden = FULL_SCREEN.some((pattern) => pattern.test(pathname));
@@ -33,7 +33,7 @@ export function BottomNav({ unread }: { unread: number }) {
       >
         <div className="mx-auto grid max-w-md grid-cols-5 items-end px-2 pb-[calc(env(safe-area-inset-bottom)+0.35rem)] pt-1.5">
           {left.map((item) => (
-            <NavLink key={item.href} item={item} active={isActive(pathname, item.href)} unread={0} />
+            <NavLink key={item.path} nestId={nestId} path={item.path} label={item.label} icon={item.icon} active={isActive(pathname, nestId, item.path)} unread={0} />
           ))}
           <div className="flex justify-center">
             <motion.button
@@ -49,36 +49,48 @@ export function BottomNav({ unread }: { unread: number }) {
           </div>
           {right.map((item) => (
             <NavLink
-              key={item.href}
-              item={item}
-              active={isActive(pathname, item.href)}
-              unread={item.href === "/activity" ? unread : 0}
+              key={item.path}
+              nestId={nestId}
+              path={item.path}
+              label={item.label}
+              icon={item.icon}
+              active={isActive(pathname, nestId, item.path)}
+              unread={item.path === "/activity" ? unread : 0}
             />
           ))}
         </div>
       </nav>
 
-      <QuickAddSheet open={quickOpen} onClose={() => setQuickOpen(false)} />
+      <QuickAddSheet nestId={nestId} open={quickOpen} onClose={() => setQuickOpen(false)} />
     </>
   );
 }
 
-function NavLink({ item, active, unread }: { item: (typeof NAV_ITEMS)[number]; active: boolean; unread: number }) {
-  const Icon = item.icon;
+function NavLink({
+  nestId,
+  path,
+  label,
+  icon: Icon,
+  active,
+  unread,
+}: {
+  nestId: string;
+  path: string;
+  label: string;
+  icon: (typeof NAV_ITEMS)[number]["icon"];
+  active: boolean;
+  unread: number;
+}) {
   return (
     <Link
-      href={item.href}
+      href={nestHref(nestId, path)}
       aria-current={active ? "page" : undefined}
       className={`relative flex flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[11px] font-semibold transition-colors ${
         active ? "text-accent" : "text-ink-3 hover:text-ink-2"
       }`}
     >
       {active && (
-        <motion.span
-          layoutId="bottom-nav-pill"
-          className="absolute inset-x-2 top-0 h-1 rounded-full bg-accent"
-          transition={{ type: "spring", stiffness: 500, damping: 36 }}
-        />
+        <motion.span layoutId="bottom-nav-pill" className="absolute inset-x-2 top-0 h-1 rounded-full bg-accent" transition={{ type: "spring", stiffness: 500, damping: 36 }} />
       )}
       <span className="relative">
         <Icon className="size-[22px]" strokeWidth={active ? 2.4 : 2} aria-hidden />
@@ -95,17 +107,17 @@ function NavLink({ item, active, unread }: { item: (typeof NAV_ITEMS)[number]; a
           </motion.span>
         )}
       </span>
-      {item.label}
+      {label}
     </Link>
   );
 }
 
-function QuickAddSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+function QuickAddSheet({ nestId, open, onClose }: { nestId: string; open: boolean; onClose: () => void }) {
   const router = useRouter();
   const actions = [
-    { href: "/expenses/new", title: "Add an expense", hint: "Split it, or keep it personal", icon: Receipt, tone: "bg-accent-soft text-accent-ink" },
-    { href: "/balances?settle=1", title: "Record a payment", hint: "Settle up by UPI or cash", icon: Scale, tone: "bg-positive-soft text-positive" },
-    { href: "/shopping?add=1", title: "Add to the shopping list", hint: "Milk, eggs, anything", icon: ShoppingBasket, tone: "bg-sunken text-ink-2" },
+    { path: "/expenses/new", title: "Add an expense", hint: "Split it, or keep it personal", icon: Receipt, tone: "bg-accent-soft text-accent-ink" },
+    { path: "/balances?settle=1", title: "Record a payment", hint: "Settle up by UPI or cash", icon: Scale, tone: "bg-positive-soft text-positive" },
+    { path: "/shopping?add=1", title: "Add to the shopping list", hint: "Milk, eggs, anything", icon: ShoppingBasket, tone: "bg-sunken text-ink-2" },
   ];
   return (
     <Sheet open={open} onClose={onClose} title="What's new?">
@@ -113,12 +125,12 @@ function QuickAddSheet({ open, onClose }: { open: boolean; onClose: () => void }
         {actions.map((action) => {
           const Icon = action.icon;
           return (
-            <li key={action.href}>
+            <li key={action.path}>
               <button
                 type="button"
                 onClick={() => {
                   onClose();
-                  router.push(action.href);
+                  router.push(nestHref(nestId, action.path));
                 }}
                 className="flex w-full items-center gap-3.5 rounded-2xl border border-line bg-surface p-3.5 text-left shadow-soft transition-transform active:scale-[0.98]"
               >

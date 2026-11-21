@@ -7,13 +7,14 @@ import {
   addShoppingItemAction,
   deleteShoppingItemAction,
   setShoppingBoughtAction,
-} from "@/app/(app)/shopping/actions";
+} from "@/app/(app)/n/[nestId]/shopping/actions";
 import { Avatar } from "@/components/avatar/Avatar";
 import { IllustrationBasket } from "@/components/brand/Illustrations";
 import { useLive } from "@/components/live/LiveProvider";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RelativeTime } from "@/components/ui/RelativeTime";
 import { useToast } from "@/components/ui/Toast";
+import { useNestId } from "@/components/nest/NestContext";
 import type { Member } from "@/lib/data/context";
 import type { ShoppingItemView } from "@/lib/data/queries";
 import { haptic } from "@/lib/haptics";
@@ -44,6 +45,7 @@ function reduce(state: ShoppingItemView[], action: OptimisticAction): ShoppingIt
  */
 export function ShoppingList({ items, me, members, seenAt, focusAdd }: { items: ShoppingItemView[]; me: Member; members: Member[]; seenAt: string; focusAdd: boolean }) {
   const { toast } = useToast();
+  const nestId = useNestId();
   const [optimistic, apply] = useOptimistic(items, reduce);
   const [, startTransition] = useTransition();
   const [name, setName] = useState("");
@@ -75,7 +77,7 @@ export function ShoppingList({ items, me, members, seenAt, focusAdd }: { items: 
         type: "add",
         item: { id: `tmp-${Date.now()}`, name: trimmed, quantity: qty || null, status: "open", addedBy: me.userId, boughtBy: null, createdAt: new Date().toISOString(), boughtAt: null },
       });
-      const result = await addShoppingItemAction({ name: trimmed, quantity: qty });
+      const result = await addShoppingItemAction({ nestId, name: trimmed, quantity: qty });
       if (!result.ok) toast({ title: "Couldn't add that", description: result.error, tone: "error" });
     });
   }
@@ -107,7 +109,12 @@ export function ShoppingList({ items, me, members, seenAt, focusAdd }: { items: 
           label: "Undo",
           onClick: () =>
             startTransition(async () => {
-              await addShoppingItemAction({ name: item.name, quantity: item.quantity ?? "" });
+              // Show it straight back in the list, then let the server confirm.
+              apply({
+                type: "add",
+                item: { id: `tmp-${Date.now()}`, name: item.name, quantity: item.quantity ?? null, status: "open", addedBy: me.userId, boughtBy: null, createdAt: new Date().toISOString(), boughtAt: null },
+              });
+              await addShoppingItemAction({ nestId, name: item.name, quantity: item.quantity ?? "" });
             }),
         },
       });
@@ -171,7 +178,7 @@ export function ShoppingList({ items, me, members, seenAt, focusAdd }: { items: 
         {/* To buy. */}
         {open.length === 0 && bought.length === 0 ? (
           <div className="rounded-card border border-line bg-surface">
-            <EmptyState illustration={<IllustrationBasket className="w-52" />} title="Looks like you're all stocked up" description="Nothing on the list. Add something above and your roommate sees it straight away." />
+            <EmptyState illustration={<IllustrationBasket className="w-52" />} title="Looks like you're all stocked up" description="Nothing on the list. Add something above and your housemates see it straight away." />
           </div>
         ) : (
           <section aria-label="To buy">

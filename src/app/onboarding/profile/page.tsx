@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AVATAR_KEYS } from "@/lib/avatars";
-import { getAppContext } from "@/lib/data/context";
+import { getPersonContext } from "@/lib/data/context";
 import { ProfileStep } from "./ProfileStep";
 
 export const metadata: Metadata = { title: "Set up your profile" };
@@ -13,7 +13,7 @@ function suggestName(email: string | null): string {
   return word ? word[0].toUpperCase() + word.slice(1) : "";
 }
 
-/** A stable first avatar per person, so two roommates rarely start on the same one. */
+/** A stable first avatar per person, so housemates rarely start on the same one. */
 function suggestAvatar(email: string | null) {
   let hash = 0;
   for (const char of email ?? "") hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
@@ -21,10 +21,15 @@ function suggestAvatar(email: string | null) {
 }
 
 export default async function ProfilePage() {
-  const ctx = await getAppContext();
-  if (!ctx) redirect("/login");
-  if (ctx.household) redirect("/");
-  if (ctx.profile) redirect("/onboarding/flat");
+  const person = await getPersonContext();
+  if (person === null) redirect("/login");
+  if (person !== "no-profile") redirect("/");
 
-  return <ProfileStep suggestedName={suggestName(ctx.email)} suggestedAvatar={suggestAvatar(ctx.email)} />;
+  // getPersonContext says "no-profile" for a new person; their email is needed for suggestions.
+  const { createSupabaseServerClient } = await import("@/lib/supabase/server");
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.auth.getUser();
+  const email = data.user?.email ?? null;
+
+  return <ProfileStep suggestedName={suggestName(email)} suggestedAvatar={suggestAvatar(email)} />;
 }

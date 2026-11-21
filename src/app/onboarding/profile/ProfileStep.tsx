@@ -28,7 +28,9 @@ export function ProfileStep({ suggestedName, suggestedAvatar }: { suggestedName:
         setError(result.error);
         return;
       }
-      router.push("/onboarding/flat");
+      // A person who opened a join link first goes back to it; everyone else goes to the front page.
+      const next = decodeURIComponent((document.cookie.match(/(?:^|; )chai-next=([^;]*)/) ?? [])[1] ?? "");
+      router.push(next.startsWith("/join/") ? next : "/");
     });
   }
 
@@ -42,9 +44,9 @@ export function ProfileStep({ suggestedName, suggestedAvatar }: { suggestedName:
       className="flex flex-1 flex-col gap-6"
     >
       <div className="space-y-3">
-        <StepDots step={1} labels={["You", "Your flat", "Invite"]} />
+        <StepDots step={1} labels={["You", "Your nest", "Invite"]} />
         <h1 className="font-display text-4xl font-semibold leading-tight tracking-tight">Who&apos;s this?</h1>
-        <p className="text-ink-2">Pick the face your flatmates will see next to everything you add.</p>
+        <p className="text-ink-2">Pick the face your housemates will see next to everything you add.</p>
       </div>
 
       <AvatarStage avatar={avatar} name={name} />
