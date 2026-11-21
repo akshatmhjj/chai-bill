@@ -96,7 +96,7 @@ export function LoginForm({ linkError }: { linkError: boolean }) {
                   Your flat&apos;s little ledger.
                 </h1>
                 <p className="text-lg text-ink-2">
-                  Split what you spend, settle up without the awkwardness, and keep the shopping list in one place. Just the two of you.
+                  Split what you spend, settle up without the awkwardness, and keep the shopping list in one place. For the whole flat.
                 </p>
               </div>
 

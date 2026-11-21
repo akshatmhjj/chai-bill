@@ -21,6 +21,7 @@ export const AmountInput = forwardRef<
       <input
         id={id}
         ref={ref}
+        aria-label="Amount in rupees"
         inputMode="decimal"
         autoComplete="off"
         placeholder="0"

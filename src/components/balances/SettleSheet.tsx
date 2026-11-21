@@ -21,28 +21,34 @@ function toInputRupees(paise: number): string {
 }
 
 /**
- * Record a payment you made to your roommate. Any amount works (partial payments are normal),
- * and the sheet nudges but never blocks when you pay more than you owe.
+ * Record a payment you made to one person. Any amount works (partial payments are normal).
+ * The sheet starts on the person you owe most, with the plan's amount for them, and warns but never
+ * blocks when you pay more than the plan asks.
  */
 export function SettleSheet({
   open,
   onClose,
   me,
-  roommate,
-  owePaise,
+  others,
+  planned,
   today,
   onRecorded,
 }: {
   open: boolean;
   onClose: () => void;
   me: Member;
-  roommate: Member;
-  /** What you currently owe them, to prefill and to detect settling in full. 0 when nothing is owed. */
-  owePaise: number;
+  /** Everyone you could pay. */
+  others: Member[];
+  /** The settle-up plan's amount you owe each person (paise). People not listed are owed nothing. */
+  planned: Record<string, number>;
   today: string;
-  onRecorded?: (result: { settled: boolean; amountPaise: number }) => void;
+  onRecorded?: (result: { settled: boolean; amountPaise: number; toName: string }) => void;
 }) {
   const { toast } = useToast();
+  const payees = [...others].sort((a, b) => (planned[b.userId] ?? 0) - (planned[a.userId] ?? 0));
+  const defaultPayee = payees[0]?.userId ?? "";
+
+  const [to, setTo] = useState(defaultPayee);
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState<Method>("upi");
   const [reference, setReference] = useState("");
@@ -51,16 +57,30 @@ export function SettleSheet({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  // Start from what you owe each time the sheet opens.
+  const payee = others.find((m) => m.userId === to) ?? null;
+  const owePaise = planned[to] ?? 0;
+
+  // Start fresh each time the sheet opens, on the person you owe most.
   useEffect(() => {
     if (!open) return;
+    setTo(defaultPayee);
     setAmount(owePaise > 0 ? toInputRupees(owePaise) : "");
     setMethod("upi");
     setReference("");
     setNote("");
     setDate(today);
     setError(null);
-  }, [open, owePaise, today]);
+    // owePaise is read for the chosen payee on open only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  // Changing the payee suggests that person's planned amount.
+  function choose(next: string) {
+    setTo(next);
+    const plan = planned[next] ?? 0;
+    setAmount(plan > 0 ? toInputRupees(plan) : "");
+    setError(null);
+  }
 
   let amountPaise = 0;
   let amountError: string | null = null;
@@ -72,13 +92,14 @@ export function SettleSheet({
       amountError = e instanceof MoneyError ? "Enter an amount like 250 or 249.50." : "Enter a valid amount.";
     }
   }
-  const valid = amountPaise > 0 && !amountError;
+  const valid = Boolean(payee) && amountPaise > 0 && !amountError;
   const overpaying = valid && owePaise > 0 && amountPaise > owePaise;
 
   function save() {
+    if (!payee) return;
     setError(null);
     const form = new FormData();
-    form.set("to", roommate.userId);
+    form.set("to", payee.userId);
     form.set("amount", amount);
     form.set("method", method);
     form.set("reference", reference);
@@ -88,9 +109,9 @@ export function SettleSheet({
       const result = await recordSettlementAction(form);
       if (!result.ok) return setError(result.error);
       const settled = owePaise > 0 && amountPaise >= owePaise;
-      toast({ title: settled ? "All settled up" : "Payment recorded", description: `${formatINRCompact(amountPaise)} to ${roommate.name}` });
+      toast({ title: settled ? "All settled up with " + payee.name : "Payment recorded", description: `${formatINRCompact(amountPaise)} to ${payee.name}` });
       onClose();
-      onRecorded?.({ settled, amountPaise });
+      onRecorded?.({ settled, amountPaise, toName: payee.name });
     });
   }
 
@@ -99,24 +120,48 @@ export function SettleSheet({
       open={open}
       onClose={onClose}
       title="Record a payment"
-      description={`What you paid ${roommate.name}`}
+      description={payee ? `What you paid ${payee.name}` : "Who did you pay?"}
       footer={
         <Button full size="lg" onClick={save} loading={pending} disabled={!valid}>
-          {valid ? `Record ${formatINRCompact(amountPaise)} to ${roommate.name}` : "Enter an amount"}
+          {valid && payee ? `Record ${formatINRCompact(amountPaise)} to ${payee.name}` : "Enter an amount"}
         </Button>
       }
     >
       <div className="flex flex-col gap-5">
+        {others.length > 1 && (
+          <div>
+            <p className="mb-2 text-sm font-semibold text-ink-2">Paying</p>
+            <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 no-scrollbar" role="radiogroup" aria-label="Who you paid">
+              {others.map((m) => {
+                const selected = m.userId === to;
+                return (
+                  <button
+                    key={m.userId}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => choose(m.userId)}
+                    className={`flex shrink-0 items-center gap-2 rounded-full border-2 py-1 pl-1 pr-3 text-sm font-semibold transition-colors ${
+                      selected ? "border-accent bg-accent-soft/60" : "border-line bg-surface hover:bg-surface-2"
+                    }`}
+                  >
+                    <Avatar avatar={m.avatar} size={28} />
+                    {m.name}
+                    {(planned[m.userId] ?? 0) > 0 && <span className="text-xs text-ink-3">{formatINRCompact(planned[m.userId])}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-center gap-3">
           <Avatar avatar={me.avatar} size={44} ring="surface" />
           <span aria-hidden className="text-ink-3">→</span>
-          <Avatar avatar={roommate.avatar} size={44} ring="surface" />
+          {payee && <Avatar avatar={payee.avatar} size={44} ring="surface" />}
         </div>
 
         <div>
-          <label htmlFor="settle-amount" className="sr-only">
-            Amount in rupees
-          </label>
           <AmountInput id="settle-amount" value={amount} onChange={setAmount} invalid={Boolean(amountError)} size="lg" />
           {amountError && <p role="alert" className="mt-1 text-center text-sm text-negative">{amountError}</p>}
           {owePaise > 0 && (
@@ -131,9 +176,9 @@ export function SettleSheet({
               )}
             </div>
           )}
-          {overpaying && (
+          {overpaying && payee && (
             <p className="mt-3 rounded-xl bg-hilite px-3 py-2 text-center text-sm text-ink-2">
-              That&apos;s more than you owe. {roommate.name} would owe you the difference.
+              That&apos;s more than you owe {payee.name}. They&apos;d owe you the difference.
             </p>
           )}
         </div>

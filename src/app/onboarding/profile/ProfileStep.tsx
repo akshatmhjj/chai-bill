@@ -44,7 +44,7 @@ export function ProfileStep({ suggestedName, suggestedAvatar }: { suggestedName:
       <div className="space-y-3">
         <StepDots step={1} labels={["You", "Your flat", "Invite"]} />
         <h1 className="font-display text-4xl font-semibold leading-tight tracking-tight">Who&apos;s this?</h1>
-        <p className="text-ink-2">Pick the face your roommate will see next to everything you add.</p>
+        <p className="text-ink-2">Pick the face your flatmates will see next to everything you add.</p>
       </div>
 
       <AvatarStage avatar={avatar} name={name} />

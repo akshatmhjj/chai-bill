@@ -1,6 +1,6 @@
 # Chai Bill design system
 
-Chai Bill is a home for two people, not a finance dashboard. The design aims for warm, personal and
+Chai Bill is a home for the people who share a flat, not a finance dashboard. The design aims for warm, personal and
 quick: you should be able to add a chai bill in a few seconds, and opening the app should feel a little
 like checking in on your flat.
 
@@ -18,7 +18,7 @@ A live reference of every token and component below is at `/design` when running
 4. **Motion has a job.** Things animate to show what changed (a new row easing in, a balance counting to
    its new value, an item springing into "bought"), never to decorate. Everything respects
    `prefers-reduced-motion`.
-5. **Real changes feel real.** Realtime updates are announced (a toast with the roommate's avatar), shown
+5. **Real changes feel real.** Realtime updates are announced (a toast with the flatmate's avatar), shown
    (a brief glow on what changed) and counted (an unread badge that is exactly right).
 
 ## Colour
@@ -34,7 +34,7 @@ Tokens are CSS variables in `src/app/globals.css`, surfaced as Tailwind colours 
 | `accent` | `#c4501a` chai terracotta | `#ee8a4c` | Primary actions |
 | `positive` | `#2b7753` cardamom | `#62c595` | You are owed, bought, success |
 | `negative` | `#b53f2f` clay | `#f2897a` | You owe, delete |
-| `hilite` | `#fff0c4` | `#3b3016` | The glow on something your roommate just changed |
+| `hilite` | `#fff0c4` | `#3b3016` | The glow on something a flatmate just changed |
 
 Dark mode is a layered espresso, not an inversion: each surface step is lighter than the one under it,
 so elevation stays readable, and accents are re-tuned for contrast on dark.
@@ -95,7 +95,7 @@ Built with `motion`. Springs for things you touch, short ease-outs for things th
 | New or removed row | Height and opacity spring |
 | Shopping item bought | Tick pops, row glides to "Bought" |
 | Avatar chosen | Spring scale, the preview stage swaps and takes on that character's colour |
-| Roommate's change | The changed row glows for about three seconds, plus a toast |
+| A flatmate's change | The changed row glows for about three seconds, plus a toast |
 | Balance settled | A short confetti burst |
 
 ## Unread activity

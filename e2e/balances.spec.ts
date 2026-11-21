@@ -13,9 +13,9 @@ test("the balance reads correctly from both sides, with the arithmetic behind it
   await open(b, "/balances");
   await expect(hero(b)).toContainText("You owe Akshat");
   await expect(hero(b)).toContainText("₹500");
-  const why = b.getByText("Why this balance").locator("..").locator("..");
+  const why = b.getByText("Why your balance is this").locator("..").locator("..");
   await expect(why).toContainText("Your share of everything");
-  await expect(why).toContainText("You owe₹500");
+  await expect(why).toContainText("You owe overall");
 
   await aContext.close();
   await bContext.close();

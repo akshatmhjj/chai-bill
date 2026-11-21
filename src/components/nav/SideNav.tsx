@@ -9,6 +9,7 @@ import { Logo } from "@/components/brand/Logo";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { buttonStyles } from "@/components/ui/Button";
 import type { AvatarKey } from "@/lib/avatars";
+import { namesList } from "@/lib/people";
 import { isActive, NAV_ITEMS } from "./items";
 
 interface Person {
@@ -17,9 +18,9 @@ interface Person {
 }
 
 /** Desktop navigation: a fixed sidebar with the household always in view. */
-export function SideNav({ me, roommate, householdName, unread }: { me: Person; roommate: Person | null; householdName: string; unread: number }) {
+export function SideNav({ me, others, householdName, unread }: { me: Person; others: Person[]; householdName: string; unread: number }) {
   const pathname = usePathname();
-  const people = roommate ? [me, roommate] : [me];
+  const people = [me, ...others];
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-line bg-surface/60 px-4 py-6 backdrop-blur-xl lg:flex">
       <Link href="/" className="px-2" aria-label="Chai Bill home">
@@ -66,10 +67,10 @@ export function SideNav({ me, roommate, householdName, unread }: { me: Person; r
       <div className="mt-auto space-y-4">
         <div className="rounded-2xl border border-line bg-surface p-3.5 shadow-soft">
           <div className="flex items-center gap-3">
-            <AvatarStack people={people} size={34} />
+            <AvatarStack people={people.slice(0, 3)} size={34} />
             <div className="min-w-0">
               <p className="truncate font-display text-base font-semibold leading-tight">{householdName}</p>
-              <p className="truncate text-xs text-ink-3">{roommate ? `${me.name} & ${roommate.name}` : "Waiting for your roommate"}</p>
+              <p className="truncate text-xs text-ink-3">{others.length ? `${people.length} people · ${namesList(people.map((p) => p.name))}` : "Waiting for your flatmates"}</p>
             </div>
           </div>
         </div>

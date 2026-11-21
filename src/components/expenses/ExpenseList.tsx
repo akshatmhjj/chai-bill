@@ -86,7 +86,7 @@ export function ExpenseList({
             title={filter === "personal" ? "No personal expenses" : filter === "shared" ? "No shared expenses yet" : "No expenses yet"}
             description={
               filter === "personal"
-                ? "Things you track just for yourself show up here, and your roommate never sees them."
+                ? "Things you track just for yourself show up here, and nobody else in the flat sees them."
                 : "Add the first one and it shows up here, with who paid and how it was split."
             }
             action={

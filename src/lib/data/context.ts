@@ -18,8 +18,8 @@ export interface AppContext {
   household: { id: string; name: string } | null;
   members: Member[];
   me: Member | null;
-  /** The other person in the flat, if they have joined. */
-  roommate: Member | null;
+  /** Everyone else in the flat, in the order they joined. Empty until someone else joins. */
+  others: Member[];
   /** How far through the activity feed this person has read. */
   seenAt: string | null;
 }
@@ -51,7 +51,7 @@ export const getAppContext = cache(async (): Promise<AppContext | null> => {
     : null;
 
   if (!membership) {
-    return { userId: user.id, email: user.email ?? null, profile, household: null, members: [], me: null, roommate: null, seenAt: null };
+    return { userId: user.id, email: user.email ?? null, profile, household: null, members: [], me: null, others: [], seenAt: null };
   }
 
   const householdId = membership.household_id as string;
@@ -74,7 +74,7 @@ export const getAppContext = cache(async (): Promise<AppContext | null> => {
   }));
 
   const me = members.find((m) => m.userId === user.id) ?? null;
-  const roommate = members.find((m) => m.userId !== user.id) ?? null;
+  const others = members.filter((m) => m.userId !== user.id);
 
   return {
     userId: user.id,
@@ -83,7 +83,7 @@ export const getAppContext = cache(async (): Promise<AppContext | null> => {
     household: household ? { id: household.id as string, name: household.name as string } : null,
     members,
     me,
-    roommate,
+    others,
     seenAt: membership.activity_seen_at as string,
   };
 });

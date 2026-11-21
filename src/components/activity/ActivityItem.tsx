@@ -23,7 +23,7 @@ const KIND_ICON: Record<string, { icon: LucideIcon; tone: string }> = {
 
 /**
  * One event: who did it (their avatar, with a small badge for the kind of event), what happened,
- * and when. Events from your roommate that you haven't seen yet are marked "New".
+ * and when. Events from your flatmates that you haven't seen yet are marked "New".
  */
 export function ActivityItem({ event, me, members, isNew = false, compact = false }: { event: ActivityView; me: string; members: Member[]; isNew?: boolean; compact?: boolean }) {
   const { isFresh } = useLive();

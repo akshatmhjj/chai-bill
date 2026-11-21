@@ -2,13 +2,13 @@ import { Money } from "@/components/ui/Money";
 import type { MemberBreakdown } from "@/lib/money/summary";
 
 /** Why the balance is what it is, in plain arithmetic: what you paid, your share, and payments either way. */
-export function BreakdownCard({ breakdown, roommateName }: { breakdown: MemberBreakdown; roommateName: string }) {
+export function BreakdownCard({ breakdown }: { breakdown: MemberBreakdown }) {
   const net = breakdown.net;
   const rows: { label: string; hint: string; paise: number; sign: "+" | "−" | "" }[] = [
     { label: "You paid for", hint: "shared expenses you covered", paise: breakdown.paid, sign: "" },
     { label: "Your share of everything", hint: "your part of all shared expenses", paise: breakdown.owed, sign: "−" },
-    { label: "Payments you sent", hint: `money you've paid ${roommateName}`, paise: breakdown.sent, sign: "+" },
-    { label: "Payments you received", hint: `money ${roommateName} has paid you`, paise: breakdown.received, sign: "−" },
+    { label: "Payments you sent", hint: "money you've paid others in the flat", paise: breakdown.sent, sign: "+" },
+    { label: "Payments you received", hint: "money others have paid you", paise: breakdown.received, sign: "−" },
   ];
 
   return (
@@ -28,7 +28,7 @@ export function BreakdownCard({ breakdown, roommateName }: { breakdown: MemberBr
         ))}
       </dl>
       <div className="mt-1 flex items-center justify-between rounded-xl bg-sunken px-3.5 py-3">
-        <span className="font-semibold">{net < 0 ? "You owe" : net > 0 ? `${roommateName} owes you` : "Balance"}</span>
+        <span className="font-semibold">{net < 0 ? "You owe overall" : net > 0 ? "You're owed overall" : "Balance"}</span>
         <Money paise={Math.abs(net)} className={`font-display text-2xl font-semibold ${net < 0 ? "text-negative" : net > 0 ? "text-positive" : "text-ink"}`} />
       </div>
     </div>

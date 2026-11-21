@@ -8,16 +8,16 @@ import type { Member } from "@/lib/data/context";
 /** A button that opens the "record a payment" sheet, for places where the full balance hero isn't shown. */
 export function OpenSettleButton({
   me,
-  roommate,
-  owePaise,
+  others,
+  planned,
   today,
   children,
   variant = "primary",
   size = "md",
 }: {
   me: Member;
-  roommate: Member;
-  owePaise: number;
+  others: Member[];
+  planned: Record<string, number>;
   today: string;
   children: React.ReactNode;
   variant?: ButtonVariant;
@@ -29,7 +29,7 @@ export function OpenSettleButton({
       <Button variant={variant} size={size} onClick={() => setOpen(true)}>
         {children}
       </Button>
-      <SettleSheet open={open} onClose={() => setOpen(false)} me={me} roommate={roommate} owePaise={owePaise} today={today} />
+      <SettleSheet open={open} onClose={() => setOpen(false)} me={me} others={others} planned={planned} today={today} />
     </>
   );
 }

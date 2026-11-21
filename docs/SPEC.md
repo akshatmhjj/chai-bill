@@ -2,7 +2,7 @@
 
 Status: v1 draft (2026-11-20). Owner: Akshat.
 
-Chai Bill is a shared-living and expense app for two roommates in Bangalore. It is built to be used every day by the two of us, and to be a strong portfolio piece. It is deliberately not a generic split-bill app: it is opinionated about INR, UPI, and the rhythm of shared flats.
+Chai Bill is a shared-living and expense app for flatmates in Bangalore: a flat holds up to 15 people (raised from two in M7). It is built to be used every day by the two of us, and to be a strong portfolio piece. It is deliberately not a generic split-bill app: it is opinionated about INR, UPI, and the rhythm of shared flats.
 
 ---
 
@@ -20,7 +20,7 @@ Chai Bill is a shared-living and expense app for two roommates in Bangalore. It 
    - Each settlement records method (`upi`, `cash`, `other`), optional reference (e.g. UPI transaction ID), date, and note.
    - Full settlement history. Settlements are soft-deleted, never hard-deleted.
 3. **Realtime sync and activity feed**
-   - Changes made by one roommate appear on the other's screen without a refresh (Supabase Realtime, filtered by `household_id`).
+   - Changes made by one flatmate appear on everyone's screen without a refresh (Supabase Realtime, filtered by `household_id`).
    - Activity feed records: expense created/edited/deleted, settlement recorded/deleted, shopping item added/bought.
 4. **Shared shopping list**
    - Open and bought items, quantity text, who added it, who bought it.
@@ -32,7 +32,6 @@ Chai Bill is a shared-living and expense app for two roommates in Bangalore. It 
 - Analytics and charts beyond the balance view.
 - OCR of receipts, AI features of any kind.
 - Multi-currency. INR only.
-- More than two members per household. The schema allows N members, but the join flow caps a household at two in v1.
 - Native apps, push notifications, payments in-app (we only *record* UPI/cash, we never move money).
 
 ### 1.3 Users and roles
@@ -195,6 +194,7 @@ in sections 2 to 4 changed: the money rules, balance derivation and RLS model ar
 
 ### 7.1 Scope added
 
+- **Flat size.** A flat holds up to **15 people** (`household_member_cap()`, migration `20261125000000`). Balances, settle-up and the feed work for any number of members. The settle-up screen shows what you owe or are owed by each person, using the suggested plan.
 - **Profiles.** A name and one of ten avatars per person, chosen during onboarding and editable later.
   Shown wherever a person is identified. Each avatar also gives its owner a subtle personal accent colour.
 - **Expense categories** (optional): groceries, food, rent, bills, travel, home stuff, fun, health, other.

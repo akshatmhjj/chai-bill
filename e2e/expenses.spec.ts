@@ -110,6 +110,8 @@ test("editing an expense updates the list, and the edit shows in the activity fe
   await expect(a).toHaveURL(/\/expenses\/.+\/edit/);
   await ready(a);
   await a.locator("#expense-amount").fill("1200");
+  // Wait until the field holds the new amount before saving.
+  await expect(a.locator("#expense-amount")).toHaveValue("1200");
   await a.getByRole("button", { name: "Save changes" }).click();
   await expect(a).toHaveURL(/\/expenses$/);
   await expect(a.getByText("your share ₹600")).toBeVisible();

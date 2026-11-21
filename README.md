@@ -3,7 +3,7 @@
 # ☕ Chai Bill
 
 **The shared ledger for your flat.**<br>
-Split expenses, settle up without the awkwardness, and keep the shopping list in one place. Made for two roommates, in rupees, with UPI.
+Split expenses, settle up without the awkwardness, and keep the shopping list in one place. Made for flatmates, in rupees, with UPI.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-c4501a.svg)](LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-2b7753.svg)](CONTRIBUTING.md)
@@ -26,16 +26,16 @@ wifi, you'll know why it exists. See [Contributing](#-contributing) to join in.
 
 ## Why Chai Bill
 
-Most expense apps are built for groups, trips and accountants. Chai Bill is built for the two people who
-share a front door: it answers *"what's happening in our flat?"* the moment you open it.
+Most expense apps are built for groups, trips and accountants. Chai Bill is built for the people who share
+a front door, up to 15 of them: it answers *"what's happening in our flat?"* the moment you open it.
 
 - **Who owes whom, at a glance.** Two avatars, one arrow, one number. Tap once to settle up.
 - **Quick enough to use daily.** Adding a chai bill takes seconds: type an amount, and you're nearly done.
 - **Honest about money.** Everything is stored as integer paise. Splits never leak a paisa, and the leftover
   always lands somewhere predictable (with the payer).
-- **Private where it counts.** Your personal expenses are invisible to your roommate, enforced in the
+- **Private where it counts.** Your personal expenses are invisible to everyone else in the flat, enforced in the
   database, not just hidden in the UI.
-- **Alive.** When your roommate adds something, your screen updates, tells you who did it, and the new item
+- **Alive.** When a flatmate adds something, your screen updates, tells you who did it, and the new item
   glows. No refreshing.
 
 ## Features
@@ -67,7 +67,7 @@ share a front door: it answers *"what's happening in our flat?"* the moment you 
 ### 🔔 Activity and live updates
 - A feed of every expense, edit, payment and shopping change
 - "New since your last visit" that is exactly right
-- Toasts with your roommate's avatar as it happens
+- Toasts with the flatmate's avatar as it happens
 
 ### 🎨 Made to be enjoyed
 - Ten hand-drawn avatars, each with its own accent
@@ -124,7 +124,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...                      # ANON_KEY
 
 **Signing in locally.** Chai Bill uses magic links, and local emails never leave your machine. Open the
 inbox at **http://127.0.0.1:54324**, click the link, and you're in. Sign in as two different emails (in two
-browsers or one normal and one private window) to play both roommates.
+browsers or one normal and one private window) to play two flatmates, or use more emails for more.
 
 > **Heads up:** `supabase/config.toml` limits sign-in emails to 2 per hour, the safe value for
 > production. When developing locally you'll hit that quickly. Raise `email_sent` (and
@@ -169,7 +169,7 @@ Privacy is enforced where it can't be bypassed: in Postgres.
 - A payment can only be recorded by the person who made it.
 - Every expense's shares must add up to its total, checked by a deferred constraint at `COMMIT`.
 - Households are created and joined only through RPCs; invite codes are single use, expire in 7 days, and a
-  flat is capped at two people.
+  flat holds up to 15 people (`household_member_cap()` in the database).
 - The activity feed is written only by database triggers, so it can't be forged from the client.
 - Realtime uses the same policies, so you only ever receive rows you could have read.
 
@@ -264,7 +264,6 @@ Good places to start, roughly from small to large. Check the issues first in cas
 - 🔗 **UPI deep links:** open the user's UPI app with the amount prefilled when settling up.
 - 📤 **Export:** download a month's expenses as CSV.
 - 🔁 **Recurring expenses:** rent and wifi, added automatically.
-- 👥 **More than two people:** the schema is ready for it; the UI and settle-up plan need to follow.
 
 ## Security
 

@@ -28,6 +28,16 @@ export function useLive(): LiveContextValue {
 const FRESH_MS = 6000;
 
 /**
+ * Re-fetches what is on screen. router.refresh() re-renders the layouts (the unread badge, the
+ * sidebar), but in testing it did not always redraw a changed row on the page. A navigation to the
+ * same URL does redraw the page, but leaves the layouts alone. So do both, one after the other.
+ */
+function refetchCurrentPage(router: { refresh: () => void; replace: (href: string, options?: { scroll?: boolean }) => void }) {
+  router.refresh();
+  setTimeout(() => router.replace(window.location.pathname + window.location.search, { scroll: false }), 600);
+}
+
+/**
  * One realtime subscription for the whole signed-in app.
  *
  * It does three things when something changes: refreshes the server-rendered data (so balances,
@@ -64,7 +74,7 @@ export function LiveProvider({
 
     const refresh = () => {
       clearTimeout(refreshTimer);
-      refreshTimer = setTimeout(() => router.refresh(), 250);
+      refreshTimer = setTimeout(() => refetchCurrentPage(router), 250);
     };
 
     const markFresh = (id: string) => {
@@ -129,6 +139,12 @@ export function LiveProvider({
       },
     );
     channel.on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, refresh);
+    // A name change is written to the flat's member row too, so listen there as well.
+    channel.on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "household_members", filter: `household_id=eq.${householdId}` },
+      refresh,
+    );
 
     (async () => {
       const { data } = await supabase.auth.getSession();

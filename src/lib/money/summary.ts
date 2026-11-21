@@ -49,3 +49,21 @@ export function buildHouseholdSummary(input: {
 
   return { balances, transfers: settleUp(balances), breakdown };
 }
+
+/**
+ * The part of the settle-up plan that involves one person: what they pay, and what is paid to them.
+ * Amounts stay exactly as the plan states them. Pure.
+ */
+export function transfersFor(
+  me: MemberId,
+  transfers: Transfer[],
+): { pay: Transfer[]; receive: Transfer[]; totalPay: Paise; totalReceive: Paise } {
+  const pay = transfers.filter((t) => t.from === me);
+  const receive = transfers.filter((t) => t.to === me);
+  return {
+    pay,
+    receive,
+    totalPay: pay.reduce((sum, t) => sum + t.paise, 0),
+    totalReceive: receive.reduce((sum, t) => sum + t.paise, 0),
+  };
+}

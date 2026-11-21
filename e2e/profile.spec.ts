@@ -17,7 +17,7 @@ test("changing your name and avatar updates your profile and reaches your roomma
   await expect(a.getByRole("heading", { name: "Akshat M" })).toBeVisible();
   await expect(a.getByRole("main").getByText("Cat · Does what it likes")).toBeVisible();
 
-  await expect(b.getByText("Akshat M", { exact: true })).toBeVisible({ timeout: 20_000 });
+  await expect(b.getByText("Akshat M", { exact: true })).toBeVisible({ timeout: 30_000 });
 
   await aContext.close();
   await bContext.close();

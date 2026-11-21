@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getAppContext } from "@/lib/data/context";
+import { FLAT_SIZE_CAP } from "@/lib/people";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { InviteStep } from "./InviteStep";
 
-export const metadata: Metadata = { title: "Invite your roommate" };
+export const metadata: Metadata = { title: "Invite your flatmates" };
 
 export default async function InvitePage() {
   const ctx = await getAppContext();
   if (!ctx) redirect("/login");
   if (!ctx.profile) redirect("/onboarding/profile");
   if (!ctx.household) redirect("/onboarding/flat");
-  // Someone has already joined: nothing to wait for.
-  if (ctx.roommate) redirect("/");
+  // A full flat has nobody left to invite.
+  if (ctx.members.length >= FLAT_SIZE_CAP) redirect("/");
 
   // The newest invite that is still usable. Members can read their flat's invites.
   const supabase = await createSupabaseServerClient();

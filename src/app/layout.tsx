@@ -20,7 +20,7 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   title: { default: "Chai Bill", template: "%s · Chai Bill" },
-  description: "Shared expenses, settling up and a shopping list for two roommates.",
+  description: "Shared expenses, settling up and a shopping list for the people you share a home with.",
 };
 
 export const viewport: Viewport = {

@@ -24,7 +24,7 @@ saves you building something we'd have to ask you to change.
 Follow [Getting started](README.md#getting-started) in the README. In short: Node 20+, Docker and the
 Supabase CLI, then `npm install`, `supabase start`, fill in `.env.local`, and `npm run dev`.
 
-Sign in with two different emails to play both roommates, and read the emails in the local inbox at
+Sign in with different emails to play the flatmates (two is enough for most work), and read the emails in the local inbox at
 http://127.0.0.1:54324. Raise the local auth rate limits in `supabase/config.toml` while you develop
 (see the README note) but **don't commit that change**.
 

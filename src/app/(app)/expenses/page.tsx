@@ -7,6 +7,7 @@ import { buttonStyles } from "@/components/ui/Button";
 import { requireOnboarded } from "@/lib/data/context";
 import { loadExpenses, loadMonthStats } from "@/lib/data/queries";
 import { monthStartInIndia, todayInIndia } from "@/lib/dates/india";
+import { namesList } from "@/lib/people";
 
 export const metadata: Metadata = { title: "Expenses" };
 
@@ -18,7 +19,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
     <div className="mx-auto max-w-2xl">
       <PageHeader
         title="Expenses"
-        subtitle={ctx.roommate ? `You and ${ctx.roommate.name}` : ctx.household.name}
+        subtitle={ctx.others.length ? namesList([ctx.me.name, ...ctx.others.map((m) => m.name)]) : ctx.household.name}
         me={ctx.me}
         action={
           <div className="hidden lg:block">

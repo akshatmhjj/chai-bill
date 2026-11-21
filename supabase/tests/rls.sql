@@ -52,6 +52,7 @@ declare
   exp_shared uuid;
   exp_bad uuid;
   exp_personal uuid;
+  filler uuid;
   n bigint;
   affected integer;
 begin
@@ -173,8 +174,20 @@ begin
   get diagnostics affected = row_count;
   perform pg_temp.check_eq('carol cannot update the shared expense (0 rows)', affected, 0);
 
-  -- The household is capped at two members.
-  perform pg_temp.expect_error('a third member cannot join a full household',
+  -- The household is capped at 15 members. Fill it to the cap (as the superuser, to skip 13 sign-ups),
+  -- then check a 16th person is turned away.
+  perform pg_temp.as_superuser();
+  for i in 1..(public.household_member_cap() - 2) loop
+    filler := gen_random_uuid();
+    insert into auth.users (id, email) values (filler, 'filler' || i || '@test.local');
+    insert into public.household_members (household_id, user_id, display_name)
+      values (hh, filler, 'Filler ' || i);
+  end loop;
+  select count(*) into n from public.household_members where household_id = hh;
+  perform pg_temp.check_eq('the flat is filled to the cap', n, public.household_member_cap());
+
+  perform pg_temp.as_user(carol);
+  perform pg_temp.expect_error('a sixteenth person cannot join a full household',
     format('select public.join_household(%L, %L)', invite_for_carol, 'Carol'));
 
   -- ---------------------------------------------------------------- anon

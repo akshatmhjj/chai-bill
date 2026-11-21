@@ -147,3 +147,12 @@ export async function addExpense(
 export function hero(page: Page) {
   return page.getByRole("region", { name: "Your balance" });
 }
+
+/** From the profile, make a fresh single-use invite code for the next flatmate. */
+export async function newInviteFromProfile(page: Page): Promise<string> {
+  await open(page, "/profile");
+  await page.getByRole("button", { name: "New code" }).click();
+  const code = page.locator('[aria-label^="Invite code "]');
+  await expect(code).toBeVisible();
+  return ((await code.getAttribute("aria-label")) ?? "").replace("Invite code ", "");
+}

@@ -95,10 +95,10 @@ export function InviteStep({ householdId, householdName, userId, me, code: initi
       <div className="space-y-3">
         <StepDots step={3} labels={["You", "Your flat", "Invite"]} />
         <h1 className="font-display text-4xl font-semibold leading-tight tracking-tight">{householdName} is ready.</h1>
-        <p className="text-ink-2">Now bring your roommate in. Send them this code. It works once.</p>
+        <p className="text-ink-2">Bring your flatmates in one at a time. Send each of them a code. Every code works once.</p>
       </div>
 
-      {/* The two of you: your avatar, and a placeholder that fills in when they join. */}
+      {/* You, and a placeholder that fills in when the next person joins. */}
       <div className="flex items-center justify-center gap-5 py-2">
         <Avatar avatar={me.avatar} size={76} ring="surface" className="shadow-lift" />
         <div className="flex h-0.5 w-10 items-center justify-center" aria-hidden>
@@ -124,7 +124,7 @@ export function InviteStep({ householdId, householdName, userId, me, code: initi
               animate={{ scale: [1, 1.04, 1] }}
               transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}
               className="flex size-[76px] items-center justify-center rounded-full border-2 border-dashed border-line-strong text-3xl text-ink-3"
-              aria-label="Waiting for your roommate"
+              aria-label="Waiting for a flatmate"
             >
               ?
             </motion.div>
@@ -183,7 +183,7 @@ export function InviteStep({ householdId, householdName, userId, me, code: initi
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-60" />
                 <span className="relative inline-flex size-2 rounded-full bg-accent" />
               </span>
-              Waiting for your roommate to join…
+              Waiting for someone to join…
             </p>
           </motion.div>
         )}

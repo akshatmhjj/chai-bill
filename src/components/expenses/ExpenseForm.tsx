@@ -268,7 +268,7 @@ export function ExpenseForm({
         {scope === "personal" ? (
           <p className="-mt-3 flex items-center gap-2 rounded-xl bg-sunken px-3.5 py-3 text-sm text-ink-2">
             <Lock className="size-4 shrink-0" aria-hidden />
-            Only you can see this. It never affects what you and your roommate owe each other.
+            Only you can see this. It never affects what anyone in the flat owes.
           </p>
         ) : (
           <>

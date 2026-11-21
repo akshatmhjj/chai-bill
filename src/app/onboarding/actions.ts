@@ -2,12 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { fail, type ActionResult } from "@/lib/action-result";
+import { FLAT_SIZE_CAP } from "@/lib/people";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { flatNameSchema, inviteCodeSchema, profileSchema } from "@/lib/validation/household";
 
 /** Turns an RPC error into something a person can act on. */
 function friendly(message: string): string {
-  if (message.includes("household is full")) return "This flat already has two people.";
+  if (message.includes("household is full")) return `This flat is full. It holds up to ${FLAT_SIZE_CAP} people.`;
   if (message.includes("invite is invalid or expired")) return "That invite code is invalid, already used, or expired.";
   if (message.includes("not authenticated")) return "Your session has expired. Please sign in again.";
   return "Something went wrong. Please try again.";
@@ -34,7 +35,7 @@ async function profileName(): Promise<string | null> {
   return (data?.display_name as string | undefined) ?? null;
 }
 
-/** Creates the flat and an invite for the roommate in one go. Returns the code to share. */
+/** Creates the flat and an invite for the first flatmate. Returns the code to share. */
 export async function createFlatAction(input: { name: string }): Promise<ActionResult<{ code: string }>> {
   const parsed = flatNameSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0].message);

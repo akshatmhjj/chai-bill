@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildHouseholdSummary } from "./summary";
+import { buildHouseholdSummary, transfersFor } from "./summary";
 import { splitEqual } from "./split";
 
 const A = "alice";
@@ -81,3 +81,25 @@ describe("buildHouseholdSummary", () => {
     }
   });
 });
+
+describe("transfersFor", () => {
+  it("splits the plan into what one person pays and what is paid to them", () => {
+    const plan = [
+      { from: "bob", to: "alice", paise: 30000 },
+      { from: "carl", to: "alice", paise: 10000 },
+      { from: "carl", to: "dana", paise: 5000 },
+    ];
+    expect(transfersFor("carl", plan)).toEqual({
+      pay: [
+        { from: "carl", to: "alice", paise: 10000 },
+        { from: "carl", to: "dana", paise: 5000 },
+      ],
+      receive: [],
+      totalPay: 15000,
+      totalReceive: 0,
+    });
+    expect(transfersFor("alice", plan).totalReceive).toBe(40000);
+    expect(transfersFor("erin", plan)).toEqual({ pay: [], receive: [], totalPay: 0, totalReceive: 0 });
+  });
+});
+

@@ -11,7 +11,7 @@ test("an expense from your roommate reaches your open Home: a toast, the balance
   await expect(hero(a)).toContainText("You owe Yashwardhan", { timeout: 20_000 });
   await expect(hero(a)).toContainText("₹400");
   await expect(a.getByLabel("1 new").first()).toBeVisible();
-  await expect(a.getByRole("heading", { name: "New from Yashwardhan" })).toBeVisible();
+  await expect(a.getByRole("heading", { name: "New since your last visit" })).toBeVisible();
 
   await aContext.close();
   await bContext.close();

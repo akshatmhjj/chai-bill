@@ -15,14 +15,17 @@ import { Section } from "@/components/ui/Section";
 import { requireOnboarded } from "@/lib/data/context";
 import { loadActivity, loadExpenses, loadMonthStats, loadShopping, loadSummary } from "@/lib/data/queries";
 import { hourInIndia, monthStartInIndia, todayInIndia } from "@/lib/dates/india";
+import { namesList } from "@/lib/people";
+import { transfersFor } from "@/lib/money/summary";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { firstName, greetingFor } from "@/lib/time";
+import { dayLabel, firstName, greetingFor } from "@/lib/time";
 
 export const metadata: Metadata = { title: "Home" };
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<{ welcome?: string }> }) {
   const [{ welcome }, ctx] = await Promise.all([searchParams, requireOnboarded()]);
   const today = todayInIndia();
+  const alone = ctx.others.length === 0;
 
   const [summary, expenses, month, shopping, activity] = await Promise.all([
     loadSummary(ctx),
@@ -33,14 +36,15 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   ]);
 
   const mine = summary.breakdown[ctx.userId];
+  const plan = transfersFor(ctx.userId, summary.transfers);
   const hasHistory = mine.paid > 0 || mine.owed > 0 || mine.sent > 0 || mine.received > 0;
   const recentExpenses = expenses.filter((e) => e.scope === "shared").slice(0, 4);
   const openItems = shopping.filter((i) => i.status === "open");
   const unseen = activity.filter((e) => e.actorId !== ctx.userId && e.createdAt > ctx.seenAt);
 
-  // Only needed while the flat has one person.
+  // Only needed while the flat has just you in it.
   let inviteCode: string | null = null;
-  if (!ctx.roommate) {
+  if (alone) {
     const supabase = await createSupabaseServerClient();
     const { data } = await supabase
       .from("household_invites")
@@ -64,7 +68,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     <>
       <PageHeader
         title={`${greetingFor(hourInIndia())}, ${firstName(ctx.me.name)}`}
-        subtitle={ctx.roommate ? `${ctx.household.name} · with ${ctx.roommate.name}` : ctx.household.name}
+        subtitle={alone ? ctx.household.name : `${ctx.household.name} · with ${namesList(ctx.others.map((m) => m.name))}`}
         me={ctx.me}
       />
 
@@ -72,9 +76,31 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         <div className="flex min-w-0 flex-col gap-8">
           {welcome === "1" && <WelcomeCard householdName={ctx.household.name} members={ctx.members} />}
 
-          {ctx.roommate ? (
+          {alone ? (
+            <section className="rounded-card border border-line bg-gradient-to-br from-accent-soft/60 via-surface to-surface p-5 shadow-soft sm:p-6">
+              <div className="flex items-center gap-4">
+                <Avatar avatar={ctx.me.avatar} size={64} ring="surface" className="shadow-soft" />
+                <span aria-hidden className="h-0.5 w-8 rounded-full bg-line-strong" />
+                <span aria-label="Nobody else has joined yet" className="flex size-16 items-center justify-center rounded-full border-2 border-dashed border-line-strong text-2xl text-ink-3">?</span>
+              </div>
+              <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight">Your flat is ready</h2>
+              <p className="mt-1 text-ink-2">Invite your flatmates to start splitting. You can add expenses in the meantime.</p>
+              <div className="mt-4">
+                <InviteCard householdId={ctx.household.id} householdName={ctx.household.name} code={inviteCode} />
+              </div>
+            </section>
+          ) : (
             <div className="flex flex-col gap-3">
-              <BalanceHero me={ctx.me} roommate={ctx.roommate} netPaise={mine.net} today={today} hasHistory={hasHistory} detailsHref="/balances" />
+              <BalanceHero
+                me={ctx.me}
+                others={ctx.others}
+                pay={plan.pay}
+                receive={plan.receive}
+                netPaise={mine.net}
+                today={today}
+                hasHistory={hasHistory}
+                detailsHref="/balances"
+              />
               <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-ink-3">
                 <span>
                   Together this month <Money paise={month.totalPaise} className="font-semibold text-ink-2" />
@@ -85,19 +111,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 </span>
               </p>
             </div>
-          ) : (
-            <section className="rounded-card border border-line bg-gradient-to-br from-accent-soft/60 via-surface to-surface p-5 shadow-soft sm:p-6">
-              <div className="flex items-center gap-4">
-                <Avatar avatar={ctx.me.avatar} size={64} ring="surface" className="shadow-soft" />
-                <span aria-hidden className="h-0.5 w-8 rounded-full bg-line-strong" />
-                <span aria-label="Your roommate hasn't joined yet" className="flex size-16 items-center justify-center rounded-full border-2 border-dashed border-line-strong text-2xl text-ink-3">?</span>
-              </div>
-              <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight">Your flat is ready</h2>
-              <p className="mt-1 text-ink-2">Invite your roommate to start splitting. You can add expenses in the meantime.</p>
-              <div className="mt-4">
-                <InviteCard householdId={ctx.household.id} householdName={ctx.household.name} code={inviteCode} />
-              </div>
-            </section>
           )}
 
           <nav aria-label="Quick actions" className="grid grid-cols-3 gap-3">
@@ -118,8 +131,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             })}
           </nav>
 
-          {ctx.roommate && unseen.length > 0 && (
-            <NewSinceCard events={unseen.slice(0, 3)} total={unseen.length} me={ctx.userId} members={ctx.members} householdId={ctx.household.id} roommateName={ctx.roommate.name} />
+          {!alone && unseen.length > 0 && (
+            <NewSinceCard events={unseen.slice(0, 3)} total={unseen.length} me={ctx.userId} members={ctx.members} householdId={ctx.household.id} />
           )}
 
           <Section title="Recent expenses" href="/expenses">
@@ -139,6 +152,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                         expense={expense}
                         me={ctx.userId}
                         members={ctx.members}
+                        showDate={dayLabel(expense.expenseDate, today)}
                         isNew={expense.createdBy !== ctx.userId && expense.createdAt > ctx.seenAt}
                       />
                     </Link>

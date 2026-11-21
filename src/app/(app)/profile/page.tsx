@@ -9,6 +9,7 @@ import { Section } from "@/components/ui/Section";
 import { AVATARS } from "@/lib/avatars";
 import { requireOnboarded } from "@/lib/data/context";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { FLAT_SIZE_CAP } from "@/lib/people";
 import { ProfileEditor } from "./ProfileEditor";
 
 export const metadata: Metadata = { title: "Profile" };
@@ -18,7 +19,7 @@ export default async function ProfilePage() {
 
   // While the flat has one person, show the newest still-usable invite.
   let inviteCode: string | null = null;
-  if (!ctx.roommate) {
+  if (ctx.members.length < FLAT_SIZE_CAP) {
     const supabase = await createSupabaseServerClient();
     const { data } = await supabase
       .from("household_invites")
@@ -78,14 +79,14 @@ export default async function ProfilePage() {
                 </div>
               </li>
             ))}
-            {!ctx.roommate && (
+            {ctx.members.length < FLAT_SIZE_CAP && (
               <li className="flex items-center gap-3 text-ink-3">
                 <span className="flex size-10 items-center justify-center rounded-full border-2 border-dashed border-line-strong">?</span>
-                <p className="text-sm">Waiting for your roommate</p>
+                <p className="text-sm">Room for more people. Invite them below.</p>
               </li>
             )}
           </ul>
-          {!ctx.roommate && (
+          {ctx.members.length < FLAT_SIZE_CAP && (
             <div className="mt-4">
               <InviteCard householdId={ctx.household.id} householdName={ctx.household.name} code={inviteCode} />
             </div>

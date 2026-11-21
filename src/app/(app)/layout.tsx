@@ -21,7 +21,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       >
         <SideNav
           me={{ name: ctx.me.name, avatar: ctx.me.avatar }}
-          roommate={ctx.roommate ? { name: ctx.roommate.name, avatar: ctx.roommate.avatar } : null}
+          others={ctx.others.map((m) => ({ name: m.name, avatar: m.avatar }))}
           householdName={ctx.household.name}
           unread={unread}
         />

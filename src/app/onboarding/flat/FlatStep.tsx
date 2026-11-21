@@ -61,7 +61,7 @@ export function FlatStep({ name, avatar }: { name: string; avatar: AvatarKey }) 
           <Avatar avatar={avatar} size={44} ring="surface" className="shadow-soft" />
           <h1 className="font-display text-4xl font-semibold leading-tight tracking-tight">Hi {name}.</h1>
         </div>
-        <p className="text-ink-2">Start a flat for you and your roommate, or join the one they already made.</p>
+        <p className="text-ink-2">Start a flat for you and your flatmates, or join one that is already set up.</p>
       </div>
 
       <Segmented<Mode>
@@ -96,7 +96,7 @@ export function FlatStep({ name, avatar }: { name: string; avatar: AvatarKey }) 
             <Field
               label="Invite code"
               name="code"
-              placeholder="Paste the code from your roommate"
+              placeholder="Paste the code you were sent"
               autoComplete="off"
               autoCapitalize="none"
               spellCheck={false}
