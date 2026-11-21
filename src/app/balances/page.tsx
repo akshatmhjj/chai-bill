@@ -100,6 +100,7 @@ export default async function BalancesPage({
           <nav className="flex gap-3 text-sm text-neutral-600">
             <Link href="/expenses" className="underline">Expenses</Link>
             <Link href="/activity" className="underline">Activity</Link>
+            <Link href="/shopping" className="underline">Shopping</Link>
           </nav>
         </div>
         <SignOutButton />

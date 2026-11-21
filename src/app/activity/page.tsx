@@ -58,6 +58,7 @@ export default async function ActivityPage() {
           <nav className="flex gap-3 text-sm text-neutral-600">
             <Link href="/expenses" className="underline">Expenses</Link>
             <Link href="/balances" className="underline">Balances</Link>
+            <Link href="/shopping" className="underline">Shopping</Link>
           </nav>
         </div>
         <SignOutButton />

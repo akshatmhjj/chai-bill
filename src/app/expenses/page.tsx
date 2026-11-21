@@ -48,6 +48,7 @@ export default async function ExpensesPage() {
           <nav className="flex gap-3 text-sm text-neutral-600">
             <Link href="/household" className="underline">Household</Link>
             <Link href="/activity" className="underline">Activity</Link>
+            <Link href="/shopping" className="underline">Shopping</Link>
           </nav>
         </div>
         <SignOutButton />

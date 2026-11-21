@@ -39,6 +39,8 @@ export function describeActivity(row: ActivityRow, nameOf: (id: string) => strin
       return `${actor} bought "${text("name")}"`;
     case "shopping_reopened":
       return `${actor} put "${text("name")}" back on the list`;
+    case "shopping_deleted":
+      return `${actor} removed "${text("name")}" from the shopping list`;
     default:
       return `${actor} made a change`;
   }

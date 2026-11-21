@@ -26,7 +26,7 @@ export function RealtimeRefresh({ householdId, userId }: { householdId: string |
 
     const channel = supabase.channel(`chai-bill-${householdId ?? "none"}-${userId}`);
     if (householdId) {
-      for (const table of ["expenses", "settlements", "activity_events"]) {
+      for (const table of ["expenses", "settlements", "activity_events", "shopping_items"]) {
         channel.on(
           "postgres_changes",
           { event: "*", schema: "public", table, filter: `household_id=eq.${householdId}` },
