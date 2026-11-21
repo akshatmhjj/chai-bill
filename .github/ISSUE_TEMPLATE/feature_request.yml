@@ -1,0 +1,35 @@
+name: Idea or feature request
+description: Suggest something that would make Chai Bill better
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Chai Bill is deliberately small: two roommates, rupees, no spreadsheets. Ideas that make everyday life in a shared flat easier are very welcome.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the situation first, then the idea. "Last month we..." is perfect.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to see?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Anything you've considered instead?
+  - type: dropdown
+    id: help
+    attributes:
+      label: Would you like to build it?
+      options:
+        - "Yes, I'd like to work on it"
+        - "Maybe, with some guidance"
+        - "No, I'm just suggesting"
+    validations:
+      required: true
