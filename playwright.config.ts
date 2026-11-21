@@ -21,6 +21,8 @@ export default defineConfig({
   webServer: {
     // A production build is stable under test; the dev server rebuilds its manifests mid-run.
     command: "npm run build && npm run start -- -p 3000",
+    // Playwright sets NODE_ENV=test, which would build the app as a non-production bundle. Test the real thing.
+    env: { NODE_ENV: "production" },
     url: "http://localhost:3000/login",
     reuseExistingServer: false,
     timeout: 300_000,

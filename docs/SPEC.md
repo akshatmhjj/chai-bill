@@ -185,3 +185,43 @@ Each milestone ends with `npm test`, `npm run build`, and a manual run on a phon
 - Magic link versus password for the two users — default is magic link.
 - Whether an expense edit should keep a per-version history. Default for v1: no; the activity feed records that an edit happened.
 - Hosting target for the demo (Vercel plus Supabase cloud) — decide before M6.
+
+---
+
+## 7. Redesign additions (M7)
+
+A full UI/UX redesign (see [DESIGN.md](DESIGN.md)) added a small amount of product scope and data. Nothing
+in sections 2 to 4 changed: the money rules, balance derivation and RLS model are as before.
+
+### 7.1 Scope added
+
+- **Profiles.** A name and one of ten avatars per person, chosen during onboarding and editable later.
+  Shown wherever a person is identified. Each avatar also gives its owner a subtle personal accent colour.
+- **Expense categories** (optional): groceries, food, rent, bills, travel, home stuff, fun, health, other.
+  Suggested from the description, never required, and only about presentation.
+- **Unread activity.** "New since your last visit", plus a badge on Activity.
+- **"Expense edited" events** in the activity feed.
+- **Appearance.** Light, dark or automatic, remembered on the device.
+- **Quick actions** from anywhere on a phone: add an expense, record a payment, add a shopping item.
+
+### 7.2 Data added
+
+| Change | Detail |
+| --- | --- |
+| `profiles` | `user_id`, `display_name` (1 to 40), `avatar_key` (one of ten). Readable by the person and by people they share a flat with. Written only by `update_profile()`, which also updates their `household_members.display_name`. |
+| `household_members.activity_seen_at` | The read marker. `mark_activity_seen(household, until)` moves it forward only, never into the future, for the caller only. |
+| `expenses.category` | Optional, constrained to the nine keys. `upsert_expense()` takes it as a last, defaulted argument. |
+| `activity_events.kind` | Adds `expense_edited`. Expense events also carry `category` and `paid_by` in their payload. |
+| Realtime | `household_members` and `profiles` join the publication, so a roommate joining or changing their avatar appears live. |
+
+### 7.3 Unread rule
+
+An event is unread for a person when it was created by someone else and after their marker. The marker
+moves to the timestamp of the newest event they were shown, after the feed has been on screen for a couple
+of seconds. A person's own actions are never unread for them.
+
+### 7.4 Routes
+
+`/login`, `/onboarding/{profile,flat,invite}`, then inside the signed-in shell: `/` (home), `/expenses`,
+`/expenses/new`, `/expenses/[id]/edit`, `/balances` (settle up), `/shopping`, `/activity`, `/profile`.
+

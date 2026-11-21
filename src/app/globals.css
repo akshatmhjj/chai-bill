@@ -1,26 +1,288 @@
 @import "tailwindcss";
 
+/*
+ * Chai Bill design tokens.
+ *
+ * Light is warm cream with espresso ink. Dark is a layered espresso, not an inversion:
+ * each surface step is a little lighter so elevation stays readable.
+ * Money has semantic colours: green = you are owed, clay = you owe, neutral = settled.
+ */
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  --canvas: #fbf7f0;
+  --sunken: #f3ecdf;
+  --surface: #fffdf9;
+  --surface-2: #f8f1e6;
+  --line: #eadfcf;
+  --line-strong: #d9cab3;
+
+  --ink: #2b2018;
+  --ink-2: #5a4a3d;
+  --ink-3: #7a6a5c;
+
+  --accent: #c4501a;
+  --accent-hover: #ad4415;
+  --on-accent: #ffffff;
+  --accent-soft: #fbe8dc;
+  --accent-ink: #8a3410;
+
+  --positive: #2b7753;
+  --positive-soft: #dcf0e4;
+  --negative: #b53f2f;
+  --negative-soft: #f9e0da;
+  --hilite: #fff0c4;
+
+  /* Personal accent, overridden per user from their avatar (see AppShell). */
+  --me: #c4501a;
+  --me-soft: #fbe8dc;
+  --me-ink: #8a3410;
+
+  --sh-soft: 0 1px 2px rgb(70 45 20 / 0.06), 0 8px 24px -12px rgb(70 45 20 / 0.16);
+  --sh-lift: 0 2px 4px rgb(70 45 20 / 0.08), 0 16px 36px -14px rgb(70 45 20 / 0.28);
+  --sh-sheet: 0 -8px 40px -8px rgb(40 24 10 / 0.28);
+  --scrim: rgb(35 22 12 / 0.45);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --canvas: #17110d;
+  --sunken: #120d0a;
+  --surface: #211a15;
+  --surface-2: #2a211b;
+  --line: #3a2e25;
+  --line-strong: #4e3f32;
+
+  --ink: #f6ede1;
+  --ink-2: #d0c2b2;
+  --ink-3: #a39383;
+
+  --accent: #ee8a4c;
+  --accent-hover: #f39a62;
+  --on-accent: #1d1109;
+  --accent-soft: #3b2518;
+  --accent-ink: #f8bd93;
+
+  --positive: #62c595;
+  --positive-soft: #17332a;
+  --negative: #f2897a;
+  --negative-soft: #3b1e1a;
+  --hilite: #3b3016;
+
+  --me: #ee8a4c;
+  --me-soft: #3b2518;
+  --me-ink: #f8bd93;
+
+  --sh-soft: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --sh-lift: 0 2px 4px rgb(0 0 0 / 0.45), 0 16px 36px -14px rgb(0 0 0 / 0.7);
+  --sh-sheet: 0 -8px 40px -8px rgb(0 0 0 / 0.6);
+  --scrim: rgb(5 3 2 / 0.62);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-canvas: var(--canvas);
+  --color-sunken: var(--sunken);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-positive: var(--positive);
+  --color-positive-soft: var(--positive-soft);
+  --color-negative: var(--negative);
+  --color-negative-soft: var(--negative-soft);
+  --color-hilite: var(--hilite);
+  --color-me: var(--me);
+  --color-me-soft: var(--me-soft);
+  --color-me-ink: var(--me-ink);
+
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
+
+  --radius-ctl: 12px;
+  --radius-card: 20px;
+  --radius-sheet: 28px;
+
+  --shadow-soft: var(--sh-soft);
+  --shadow-lift: var(--sh-lift);
+  --shadow-sheet: var(--sh-sheet);
+
+  --animate-steam: steam 3.4s ease-in-out infinite;
+  --animate-pop: pop 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+  --animate-fresh: fresh 3.2s ease-out both;
+  --animate-float: float 4.5s ease-in-out infinite;
+  --animate-flow: flow 1.4s linear infinite;
+  --animate-flowbg: flowbg 0.9s linear infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Base styles live in the base layer so Tailwind utilities (text-7xl, rounded-full...) can override them. */
+@layer base {
+  html {
+    background: var(--canvas);
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    min-height: 100dvh;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* 16px keeps iOS from zooming the page when a field is focused. Utilities can still go larger. */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Money and counts read best with aligned, lining figures. */
+.tabular {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.font-display {
+  font-feature-settings: "lnum" 1;
+  font-optical-sizing: auto;
+}
+
+/* A person's own accent, set inline from their avatar (see personalStyle). */
+.personal {
+  --me: var(--pl-me);
+  --me-soft: var(--pl-soft);
+  --me-ink: var(--pl-ink);
+}
+[data-theme="dark"] .personal {
+  --me: var(--pd-me);
+  --me-soft: var(--pd-soft);
+  --me-ink: var(--pd-ink);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Avatar badge colour follows the theme; the character art stays the same. */
+.av-bg {
+  fill: var(--av-l);
+}
+[data-theme="dark"] .av-bg {
+  fill: var(--av-d);
+}
+
+@keyframes steam {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scaleY(0.9);
+  }
+  35% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scaleY(1.1);
+  }
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* A fresh change from your roommate glows, then settles. */
+@keyframes fresh {
+  0% {
+    background-color: var(--hilite);
+    box-shadow: 0 0 0 3px var(--hilite);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 3px transparent;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Chevrons travelling from the person who owes to the person who is owed. */
+@keyframes flow {
+  from {
+    stroke-dashoffset: 16;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* The dashed line between two avatars, marching toward whoever is owed. */
+@keyframes flowbg {
+  to {
+    background-position: 12px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

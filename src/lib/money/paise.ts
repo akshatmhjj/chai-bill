@@ -56,3 +56,12 @@ export function formatINR(paise: Paise): string {
   const grouped = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(rupees);
   return `${sign}₹${grouped}.${String(fraction).padStart(2, "0")}`;
 }
+
+/**
+ * Like formatINR but drops ".00" for whole rupees: 150000 -> "₹1,500", 150050 -> "₹1,500.50".
+ * Used where many amounts sit in a list and the trailing zeros are just noise.
+ */
+export function formatINRCompact(paise: Paise): string {
+  const full = formatINR(paise);
+  return full.endsWith(".00") ? full.slice(0, -3) : full;
+}

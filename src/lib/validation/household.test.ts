@@ -1,36 +1,39 @@
 import { describe, expect, it } from "vitest";
-import {
-  createHouseholdSchema,
-  joinHouseholdSchema,
-  loginSchema,
-} from "./household";
+import { flatNameSchema, inviteCodeSchema, loginSchema, profileSchema } from "./household";
 
-describe("createHouseholdSchema", () => {
-  it("trims names and accepts valid input", () => {
-    const parsed = createHouseholdSchema.parse({ householdName: "  4B  ", displayName: " Akshat " });
-    expect(parsed).toEqual({ householdName: "4B", displayName: "Akshat" });
+describe("profileSchema", () => {
+  it("trims the name and accepts a valid avatar", () => {
+    expect(profileSchema.parse({ name: "  Akshat ", avatar: "fox" })).toEqual({ name: "Akshat", avatar: "fox" });
   });
 
-  it("rejects blank and overlong names", () => {
-    expect(createHouseholdSchema.safeParse({ householdName: "   ", displayName: "A" }).success).toBe(false);
-    expect(createHouseholdSchema.safeParse({ householdName: "x".repeat(61), displayName: "A" }).success).toBe(false);
-    expect(createHouseholdSchema.safeParse({ householdName: "Flat", displayName: "" }).success).toBe(false);
-    expect(createHouseholdSchema.safeParse({ householdName: "Flat", displayName: "x".repeat(41) }).success).toBe(false);
+  it("rejects a blank name, a long name and an unknown avatar", () => {
+    expect(profileSchema.safeParse({ name: "   ", avatar: "fox" }).success).toBe(false);
+    expect(profileSchema.safeParse({ name: "x".repeat(41), avatar: "fox" }).success).toBe(false);
+    expect(profileSchema.safeParse({ name: "Akshat", avatar: "dragon" }).success).toBe(false);
+    expect(profileSchema.safeParse({ name: "Akshat" }).success).toBe(false);
   });
 });
 
-describe("joinHouseholdSchema", () => {
+describe("flatNameSchema", () => {
+  it("trims and bounds the name", () => {
+    expect(flatNameSchema.parse({ name: "  4B  " })).toEqual({ name: "4B" });
+    expect(flatNameSchema.safeParse({ name: "   " }).success).toBe(false);
+    expect(flatNameSchema.safeParse({ name: "x".repeat(61) }).success).toBe(false);
+  });
+});
+
+describe("inviteCodeSchema", () => {
   const code = "0123456789abcdef0123456789abcdef";
 
-  it("accepts a 32-character hex code and normalises case and spaces", () => {
-    const parsed = joinHouseholdSchema.parse({ code: `  ${code.toUpperCase()} `, displayName: "Yash" });
-    expect(parsed.code).toBe(code);
+  it("accepts a 32-character hex code and normalises case, spaces and dashes", () => {
+    expect(inviteCodeSchema.parse({ code: `  ${code.toUpperCase()} ` }).code).toBe(code);
+    expect(inviteCodeSchema.parse({ code: "01234567 89abcdef-01234567-89abcdef" }).code).toBe(code);
   });
 
   it("rejects codes of the wrong length or alphabet", () => {
-    expect(joinHouseholdSchema.safeParse({ code: "abc", displayName: "Yash" }).success).toBe(false);
-    expect(joinHouseholdSchema.safeParse({ code: "z".repeat(32), displayName: "Yash" }).success).toBe(false);
-    expect(joinHouseholdSchema.safeParse({ code: code + "0", displayName: "Yash" }).success).toBe(false);
+    expect(inviteCodeSchema.safeParse({ code: "abc" }).success).toBe(false);
+    expect(inviteCodeSchema.safeParse({ code: "z".repeat(32) }).success).toBe(false);
+    expect(inviteCodeSchema.safeParse({ code: code + "0" }).success).toBe(false);
   });
 });
 

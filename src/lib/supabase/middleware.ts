@@ -3,7 +3,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { supabaseAnonKey, supabaseUrl } from "./env";
 
 /** Public routes that do not need a signed-in user. */
-const PUBLIC_PATHS = ["/login", "/auth/callback"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/auth/callback",
+  // The design-system gallery needs no sign-in while developing. In every other environment it is hidden.
+  ...(process.env.NODE_ENV === "development" ? ["/design"] : []),
+];
 
 /**
  * Refreshes the Supabase session cookies on every request and sends signed-out

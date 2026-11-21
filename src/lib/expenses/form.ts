@@ -5,6 +5,7 @@
  *
  * Relative imports only: vitest does not read the "@/..." alias.
  */
+import { isCategoryKey, type CategoryKey } from "../categories";
 import { MoneyError, parseRupeesToPaise, type Paise } from "../money/paise";
 import { splitByAmount, splitByBasisPoints, splitEqual, type ShareResult } from "../money/split";
 
@@ -24,6 +25,7 @@ export interface ParsedExpense {
   expenseDate: string;
   paidBy: string;
   splitMethod: SplitMethod;
+  category: CategoryKey | null;
   shares: ExpenseShareRow[];
 }
 
@@ -57,6 +59,7 @@ function toRows(results: ShareResult[], basisPoints: Map<string, number> | null)
  *   description  text
  *   amount       rupees, e.g. "1,234.50"
  *   expenseDate  YYYY-MM-DD
+ *   category     optional category key (see lib/categories)
  *   paidBy       member id (shared only)
  *   splitMethod  "equal" | "amount" | "percent" (shared only)
  *   participants member id, repeated once per included person (shared only)
@@ -80,6 +83,10 @@ export function parseExpenseForm(form: FormData, currentUserId: string): ParseRe
     const expenseDate = get("expenseDate");
     if (!DATE_PATTERN.test(expenseDate)) return { ok: false, error: "Pick a valid date." };
 
+    const categoryText = get("category");
+    if (categoryText && !isCategoryKey(categoryText)) return { ok: false, error: "Pick a valid category." };
+    const category: CategoryKey | null = categoryText ? (categoryText as CategoryKey) : null;
+
     if (scope === "personal") {
       return {
         ok: true,
@@ -90,6 +97,7 @@ export function parseExpenseForm(form: FormData, currentUserId: string): ParseRe
           expenseDate,
           paidBy: currentUserId,
           splitMethod: "equal",
+          category,
           shares: [{ userId: currentUserId, sharePaise: amountPaise, basisPoints: null }],
         },
       };
@@ -132,6 +140,7 @@ export function parseExpenseForm(form: FormData, currentUserId: string): ParseRe
         expenseDate,
         paidBy,
         splitMethod: splitMethod as SplitMethod,
+        category,
         shares,
       },
     };

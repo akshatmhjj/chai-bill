@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseShoppingForm } from "./form";
+import { parseShoppingForm, parseShoppingInput } from "./form";
 
 function form(fields: Record<string, string>): FormData {
   const f = new FormData();
@@ -26,5 +26,18 @@ describe("parseShoppingForm", () => {
     expect(parseShoppingForm(form({ name: "   " })).ok).toBe(false);
     expect(parseShoppingForm(form({ name: "x".repeat(121) })).ok).toBe(false);
     expect(parseShoppingForm(form({ name: "Milk", quantity: "x".repeat(41) })).ok).toBe(false);
+  });
+});
+
+describe("parseShoppingInput", () => {
+  it("accepts plain values the way a form would", () => {
+    expect(parseShoppingInput({ name: " Milk ", quantity: " 1 L " })).toEqual({ ok: true, item: { name: "Milk", quantity: "1 L" } });
+    expect(parseShoppingInput({ name: "Eggs" })).toEqual({ ok: true, item: { name: "Eggs", quantity: null } });
+  });
+
+  it("rejects missing or over-long values", () => {
+    expect(parseShoppingInput({}).ok).toBe(false);
+    expect(parseShoppingInput({ name: "x".repeat(121) }).ok).toBe(false);
+    expect(parseShoppingInput({ name: "Milk", quantity: "x".repeat(41) }).ok).toBe(false);
   });
 });

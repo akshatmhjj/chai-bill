@@ -110,9 +110,21 @@ describe("parseExpenseForm", () => {
         expenseDate: "2026-11-20",
         paidBy: ME,
         splitMethod: "equal",
+        category: null,
         shares: [{ userId: ME, sharePaise: 30000, basisPoints: null }],
       },
     });
+  });
+
+  it("reads an optional category and rejects an unknown one", () => {
+    const withCategory = parseExpenseForm(form({ ...base, splitMethod: "equal", category: "groceries" }), ME);
+    expect(withCategory.ok && withCategory.expense.category).toBe("groceries");
+
+    const without = parseExpenseForm(form({ ...base, splitMethod: "equal" }), ME);
+    expect(without.ok && without.expense.category).toBeNull();
+
+    const unknown = parseExpenseForm(form({ ...base, splitMethod: "equal", category: "crypto" }), ME);
+    expect(unknown).toEqual({ ok: false, error: "Pick a valid category." });
   });
 
   it.each([

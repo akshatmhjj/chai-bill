@@ -63,4 +63,21 @@ describe("buildHouseholdSummary", () => {
     }
     expect(Object.values(after).every((v) => v === 0)).toBe(true);
   });
+
+  it("explains each balance: paid, owed, sent, received, and the net they add up to", () => {
+    const s = buildHouseholdSummary({
+      members: [A, B],
+      expenses: [
+        { id: "e1", payerId: A, totalPaise: 100000, shares: splitEqual(100000, [A, B], A) },
+        { id: "e2", payerId: B, totalPaise: 20000, shares: splitEqual(20000, [A, B], B) },
+      ],
+      settlements: [{ id: "s1", fromId: B, toId: A, paise: 15000 }],
+    });
+    expect(s.breakdown[A]).toEqual({ paid: 100000, owed: 60000, sent: 0, received: 15000, net: 25000 });
+    expect(s.breakdown[B]).toEqual({ paid: 20000, owed: 60000, sent: 15000, received: 0, net: -25000 });
+    for (const m of [A, B]) {
+      const b = s.breakdown[m];
+      expect(b.paid - b.owed + b.sent - b.received).toBe(b.net);
+    }
+  });
 });

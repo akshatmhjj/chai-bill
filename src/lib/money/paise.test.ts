@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertPaise, formatINR, MoneyError, parseRupeesToPaise } from "./paise";
+import { assertPaise, formatINR, formatINRCompact, MoneyError, parseRupeesToPaise } from "./paise";
 
 describe("parseRupeesToPaise", () => {
   it.each([
@@ -59,5 +59,18 @@ describe("assertPaise", () => {
     expect(() => assertPaise(0.5)).toThrow(MoneyError);
     expect(() => assertPaise(Number.NaN)).toThrow(MoneyError);
     expect(() => assertPaise(Number.MAX_SAFE_INTEGER + 1)).toThrow(MoneyError);
+  });
+});
+
+describe("formatINRCompact", () => {
+  it.each([
+    [0, "₹0"],
+    [150000, "₹1,500"],
+    [150050, "₹1,500.50"],
+    [5, "₹0.05"],
+    [12345600, "₹1,23,456"],
+    [-30000, "-₹300"],
+  ])("formats %i as %s", (paise, expected) => {
+    expect(formatINRCompact(paise)).toBe(expected);
   });
 });
