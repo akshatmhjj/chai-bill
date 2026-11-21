@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Your Chai Bill sign-in link</title>
+</head>
+<body style="margin:0;padding:0;background:#fbf7f0;">
+  <!-- Preheader: the line shown beside the subject in many inboxes. Hidden in the email itself. -->
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#fbf7f0;">
+    Two mugs, one flat, and a link that's ready when you are.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fbf7f0;">
+    <tr>
+      <td align="center" style="padding:28px 12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;background:#ffffff;border-radius:28px;overflow:hidden;">
+
+          <!-- Scene: a kitchen counter with two mugs -->
+          <tr>
+            <td bgcolor="#f6d9b8" align="center" style="padding:36px 24px 0 24px;background:#f6d9b8;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <!-- Mug one: terracotta -->
+                  <td valign="bottom" style="width:120px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr><td align="center" style="height:34px;">
+                        <div style="width:8px;height:20px;margin:0 auto;background:#e9b48a;border-radius:8px;opacity:.9;"></div>
+                      </td></tr>
+                      <tr><td>
+                        <div style="width:96px;height:80px;margin:0 auto;background:#c4501a;border-radius:0 0 46px 46px;position:relative;">
+                          <div style="position:absolute;right:-22px;top:18px;width:26px;height:30px;border:9px solid #c4501a;border-left:0;border-radius:0 26px 26px 0;"></div>
+                        </div>
+                        <div style="width:112px;height:10px;margin:-2px auto 0 auto;background:#8a3410;border-radius:6px;"></div>
+                      </td></tr>
+                    </table>
+                  </td>
+                  <!-- Mug two: green -->
+                  <td valign="bottom" style="width:120px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr><td align="center" style="height:34px;">
+                        <div style="width:8px;height:20px;margin:0 auto;background:#9fd3b3;border-radius:8px;opacity:.9;"></div>
+                      </td></tr>
+                      <tr><td>
+                        <div style="width:96px;height:80px;margin:0 auto;background:#2b7753;border-radius:0 0 46px 46px;position:relative;">
+                          <div style="position:absolute;right:-22px;top:18px;width:26px;height:30px;border:9px solid #2b7753;border-left:0;border-radius:0 26px 26px 0;"></div>
+                        </div>
+                        <div style="width:112px;height:10px;margin:-2px auto 0 auto;background:#1d5a3d;border-radius:6px;"></div>
+                      </td></tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <!-- The counter the mugs sit on -->
+              <div style="height:24px;margin:0 -24px;background:#e8b98a;border-radius:24px 24px 0 0;"></div>
+            </td>
+          </tr>
+
+          <!-- Headline -->
+          <tr>
+            <td align="center" style="padding:30px 32px 0 32px;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;">
+              <h1 style="margin:0;font-size:30px;line-height:1.15;font-weight:900;color:#2b2018;letter-spacing:-0.5px;">
+                Your chai is getting cold.
+              </h1>
+              <p style="margin:14px 0 0 0;font-size:16px;line-height:1.55;color:#5a4a3d;">
+                Someone in your flat wants to split the bill. One tap and you're back in, no password needed.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Button -->
+          <tr>
+            <td align="center" style="padding:26px 32px 0 32px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" bgcolor="#2b2018" style="border-radius:999px;">
+                    <a href="{{ .ConfirmationURL }}" target="_blank"
+                       style="display:inline-block;padding:16px 34px;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;font-size:16px;font-weight:900;color:#fbf7f0;text-decoration:none;border-radius:999px;">
+                      Sign me in &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Little tips, playful -->
+          <tr>
+            <td style="padding:28px 32px 0 32px;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td width="33%" align="center" style="padding:8px;font-size:13px;line-height:1.4;color:#5a4a3d;">
+                    <div style="font-size:24px;">&#129373;</div>
+                    One link.<br>One use.
+                  </td>
+                  <td width="33%" align="center" style="padding:8px;font-size:13px;line-height:1.4;color:#5a4a3d;">
+                    <div style="font-size:24px;">&#9203;</div>
+                    Expires<br>soon.
+                  </td>
+                  <td width="33%" align="center" style="padding:8px;font-size:13px;line-height:1.4;color:#5a4a3d;">
+                    <div style="font-size:24px;">&#128373;</div>
+                    Ignore it if<br>it wasn't you.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Fallback link -->
+          <tr>
+            <td align="center" style="padding:26px 32px 20px 32px;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;">
+              <p style="margin:0;font-size:12px;line-height:1.5;color:#7a6a5c;">
+                Button not working? Paste this into your browser:<br>
+                <a href="{{ .ConfirmationURL }}" style="color:#8a3410;word-break:break-all;">{{ .ConfirmationURL }}</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer band -->
+          <tr>
+            <td align="center" bgcolor="#2b2018" style="margin-top:28px;padding:26px 32px;background:#2b2018;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;">
+              <p style="margin:0;font-size:15px;font-weight:900;color:#f6d9b8;">Split it. Settle it. Stock the fridge.</p>
+              <p style="margin:8px 0 0 0;font-size:12px;line-height:1.5;color:#c9b8a6;">
+                You're getting this because you asked to sign in to Chai Bill.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
