@@ -7,13 +7,14 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Button, buttonStyles } from "@/components/ui/Button";
 import { Section } from "@/components/ui/Section";
 import { AVATARS, personalStyle } from "@/lib/avatars";
-import { requireProfile } from "@/lib/data/context";
+import { getMyNests, requireProfile } from "@/lib/data/context";
 import { ProfileEditor } from "./ProfileEditor";
 
 export const metadata: Metadata = { title: "Profile" };
 
 export default async function ProfilePage() {
   const person = await requireProfile();
+  const nests = await getMyNests(person.userId);
   const meta = AVATARS[person.profile.avatar];
 
   return (
@@ -43,8 +44,8 @@ export default async function ProfilePage() {
 
       <Section title="Your nests">
         <div className="flex flex-col gap-3">
-          {person.nests.length === 0 && <p className="text-sm text-ink-3">You&apos;re not in a nest yet.</p>}
-          {person.nests.map((nest) => (
+          {nests.length === 0 && <p className="text-sm text-ink-3">You&apos;re not in a nest yet.</p>}
+          {nests.map((nest) => (
             <Link key={nest.id} href={`/n/${nest.id}`} className="flex items-center gap-3 rounded-card border border-line bg-surface p-4 shadow-soft hover:bg-surface-2">
               <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-me-soft font-display text-xl font-semibold text-me-ink">
                 {nest.name.charAt(0).toUpperCase()}
