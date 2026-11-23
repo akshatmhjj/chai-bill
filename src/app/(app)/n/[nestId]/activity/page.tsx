@@ -9,7 +9,7 @@ import { limitFromParam, takePage } from "@/lib/paging";
 
 export const metadata: Metadata = { title: "Activity" };
 
-const PAGE_SIZE = 30;
+const PAGE_SIZE = 10;
 
 export default async function ActivityPage({
   params,

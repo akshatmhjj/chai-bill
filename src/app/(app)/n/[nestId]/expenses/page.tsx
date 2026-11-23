@@ -13,7 +13,7 @@ import { namesList } from "@/lib/people";
 
 export const metadata: Metadata = { title: "Expenses" };
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 export default async function ExpensesPage({
   params,
