@@ -4,17 +4,34 @@ import Link from "next/link";
 import { PageHeader } from "@/components/nav/PageHeader";
 import { ExpenseList } from "@/components/expenses/ExpenseList";
 import { buttonStyles } from "@/components/ui/Button";
+import { LoadMore } from "@/components/ui/LoadMore";
 import { requireNest } from "@/lib/data/context";
-import { loadExpenses, loadMonthStats } from "@/lib/data/queries";
+import { loadExpense, loadExpenses, loadMonthStats } from "@/lib/data/queries";
 import { monthStartInIndia, todayInIndia } from "@/lib/dates/india";
+import { limitFromParam, takePage } from "@/lib/paging";
 import { namesList } from "@/lib/people";
 
 export const metadata: Metadata = { title: "Expenses" };
 
-export default async function ExpensesPage({ params, searchParams }: { params: Promise<{ nestId: string }>; searchParams: Promise<{ open?: string }> }) {
+const PAGE_SIZE = 20;
+
+export default async function ExpensesPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ nestId: string }>;
+  searchParams: Promise<{ open?: string; limit?: string }>;
+}) {
   const { nestId } = await params;
-  const [{ open }, ctx] = await Promise.all([searchParams, requireNest(nestId)]);
-  const [expenses, month] = await Promise.all([loadExpenses(), loadMonthStats(ctx, monthStartInIndia())]);
+  const [{ open, limit: limitParam }, ctx] = await Promise.all([searchParams, requireNest(nestId)]);
+  const limit = limitFromParam(limitParam, PAGE_SIZE);
+
+  const [rows, month, openedExpense] = await Promise.all([
+    loadExpenses(limit + 1),
+    loadMonthStats(ctx, monthStartInIndia()),
+    open ? loadExpense(open) : Promise.resolve(null),
+  ]);
+  const { items: expenses, hasMore } = takePage(rows, limit);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -31,7 +48,17 @@ export default async function ExpensesPage({ params, searchParams }: { params: P
           </div>
         }
       />
-      <ExpenseList expenses={expenses} me={ctx.me} members={ctx.members} seenAt={ctx.seenAt} today={todayInIndia()} month={month} openId={open} />
+      <ExpenseList
+        expenses={expenses}
+        me={ctx.me}
+        members={ctx.members}
+        seenAt={ctx.seenAt}
+        today={todayInIndia()}
+        month={month}
+        openId={open}
+        openedExpense={openedExpense}
+      />
+      {hasMore && <LoadMore href={`/n/${nestId}/expenses?limit=${limit + PAGE_SIZE}`} label="Show older expenses" />}
     </div>
   );
 }

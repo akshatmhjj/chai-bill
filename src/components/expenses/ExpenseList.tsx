@@ -35,6 +35,7 @@ export function ExpenseList({
   today,
   month,
   openId,
+  openedExpense,
 }: {
   expenses: ExpenseView[];
   me: Member;
@@ -43,6 +44,8 @@ export function ExpenseList({
   today: string;
   month: { totalPaise: number; yourSharePaise: number };
   openId?: string;
+  /** The expense named in `openId` when it is older than the loaded page, so its sheet still opens. */
+  openedExpense?: ExpenseView | null;
 }) {
   const nestPath = useNestPath();
   const [filter, setFilter] = useState<Filter>("all");
@@ -55,7 +58,7 @@ export function ExpenseList({
     return [...map.entries()];
   }, [visible]);
 
-  const selected = expenses.find((e) => e.id === selectedId) ?? null;
+  const selected = expenses.find((e) => e.id === selectedId) ?? (openedExpense?.id === selectedId ? openedExpense : null);
   const counts = { all: expenses.length, shared: expenses.filter((e) => e.scope === "shared").length, personal: expenses.filter((e) => e.scope === "personal").length };
 
   return (
