@@ -94,7 +94,7 @@ expenses, payments, shopping list and activity.
 | Layer | Choice |
 | --- | --- |
 | App | [Next.js 15](https://nextjs.org) App Router, React 19, TypeScript (strict) |
-| Styling | [Tailwind CSS 4](https://tailwindcss.com) with design tokens, [Fraunces](https://fonts.google.com/specimen/Fraunces) and [Figtree](https://fonts.google.com/specimen/Figtree) |
+| Styling | [Tailwind CSS 4](https://tailwindcss.com) with design tokens, [Bricolage Grotesque](https://fonts.google.com/specimen/Bricolage+Grotesque) and [Instrument Sans](https://fonts.google.com/specimen/Instrument+Sans) |
 | Motion and icons | [motion](https://motion.dev), [lucide-react](https://lucide.dev) |
 | Backend | [Supabase](https://supabase.com): Auth (magic links), Postgres, Realtime, row-level security |
 | Validation | [Zod](https://zod.dev) at every boundary |

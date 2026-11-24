@@ -69,7 +69,7 @@ export function DesignGallery() {
         <h2 className="font-display text-3xl font-semibold">Type</h2>
         <p className="font-display text-6xl font-semibold tracking-tight">₹12,480</p>
         <p className="font-display text-3xl font-semibold">Yashwardhan owes you</p>
-        <p className="text-base text-ink-2">Body text in Figtree. Friendly, legible, a little round. The quick brown fox jumps over 1,234.50 lazy dogs.</p>
+        <p className="text-base text-ink-2">Body text in Instrument Sans. Plain, legible, and quiet at small sizes. The quick brown fox jumps over 1,234.50 lazy dogs.</p>
         <p className="text-sm text-ink-3">Secondary text and captions, 4.5:1 contrast on the cream background.</p>
       </section>
 

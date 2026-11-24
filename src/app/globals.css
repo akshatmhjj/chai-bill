@@ -107,8 +107,8 @@
   --color-me-soft: var(--me-soft);
   --color-me-ink: var(--me-ink);
 
-  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-display-face), ui-sans-serif, system-ui, sans-serif;
 
   --radius-ctl: 12px;
   --radius-card: 20px;

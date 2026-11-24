@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { Plus, Receipt, Scale, ShoppingBasket } from "lucide-react";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Sheet } from "@/components/ui/Sheet";
@@ -89,6 +89,7 @@ function NavLink({
         active ? "text-accent" : "text-ink-3 hover:text-ink-2"
       }`}
     >
+      <LinkPending />
       {active && (
         <motion.span layoutId="bottom-nav-pill" className="absolute inset-x-2 top-0 h-1 rounded-full bg-accent" transition={{ type: "spring", stiffness: 500, damping: 36 }} />
       )}
@@ -148,4 +149,10 @@ function QuickAddSheet({ nestId, open, onClose }: { nestId: string; open: boolea
       </ul>
     </Sheet>
   );
+}
+
+/** Swaps the icon for a small spinner the instant a tab is tapped, until the next screen arrives. */
+function LinkPending() {
+  const { pending } = useLinkStatus();
+  return pending ? <span className="absolute inset-x-3 top-0 h-1 animate-pulse rounded-full bg-accent" aria-hidden /> : null;
 }

@@ -46,8 +46,8 @@ is a signature.
 
 ## Type
 
-- **Fraunces** (display): headings, amounts and the wordmark. A soft, warm serif.
-- **Figtree** (UI): everything else. Friendly and legible at small sizes.
+- **Bricolage Grotesque** (display): headings, amounts and the wordmark. A characterful grotesque with a little warmth.
+- **Instrument Sans** (UI): everything else. Plain and legible at small sizes.
 - Money uses `tabular-nums lining-nums` so columns align and digits do not jump.
 - Inputs are at least 16px, so iOS never zooms the page on focus.
 

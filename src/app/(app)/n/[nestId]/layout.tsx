@@ -1,4 +1,5 @@
 import { BottomNav } from "@/components/nav/BottomNav";
+import { MobileBack } from "@/components/nav/MobileBack";
 import { SideNav } from "@/components/nav/SideNav";
 import { LiveProvider } from "@/components/live/LiveProvider";
 import { NestIdProvider } from "@/components/nest/NestContext";
@@ -31,6 +32,7 @@ export default async function NestLayout({ children, params }: { children: React
           />
           <div className="lg:pl-64">
             <main className="mx-auto w-full max-w-3xl px-4 pb-[calc(env(safe-area-inset-bottom)+7rem)] pt-[calc(env(safe-area-inset-top)+1rem)] sm:px-6 lg:max-w-6xl lg:px-10 lg:pb-16 lg:pt-10">
+              <MobileBack nestId={ctx.household.id} />
               {children}
             </main>
           </div>
